@@ -1,0 +1,2654 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xm-well_formed path="docbook-xml-4.2\docbookx.dtd"?>
+<book>
+<title lang="ru"><inlinegraphic fileref="Images/Colors32.gif" format="GIF" width="32" depth="32"/>ПРОГРАММНЫЙ МОДУЛЬ ДЛЯ ОТОБРАЖЕНИЯ И ОБРАБОТКИ ИЗОБРАЖЕНИЙ</title> 
+<subtitle lang="ru">Справочное руководство</subtitle> 
+<titleabbrev lang="ru">VSHELL</titleabbrev> 
+<bookinfo>
+	<author>Сергей Ландышев. Лаборатория прикладного программирования</author> 
+  	<orgname>НТЦ "Модуль"</orgname> 
+ 	<copyright><year>2009</year><holder lang="ru">НТЦ Модуль</holder></copyright>
+<pubdate>18/04/2014</pubdate><edition>1.0</edition> 
+  	<invpartnumber>120-039</invpartnumber> 
+ 	<legalnotice>
+		<para lang="ru"><trademark>Module</trademark> и <trademark>NeuroMatrix</trademark> являются 
+			зарегестрированными торговыми марками ЗАО НТЦ "Модуль". 
+			Все другие торговые марки являются исключительной собственностью их соответствующих владельцев.</para>
+  	</legalnotice>
+</bookinfo>
+
+<chapter> 
+	<title lang="ru">Общие сведения</title>
+	<para lang="ru">Программный модуль VShell работает в среде Windows (95/98/NT/2000/XP), 
+		является библиотекой динамической загрузки и служит для обработки и последующего вывода изображений. 
+		VShell адресован, прежде всего, для разработчиков, занимающихся обработкой, исследованием и генерацией изображений. 
+		Модуль предоставляет пользователю удобный многооконный интерфейс для вывода изображений, 
+		позволяет разработчику сконцентрироваться на выполнении целевой задачи и избавляет его от рутинной работы, 
+		связанной с выводом графики средствами GDI, создания окон и обработки сообщений.</para>
+	<para lang="ru">VShell поддерживает операции, связанные с загрузкой и сохранением изображений (или последовательности изображений), 
+		производит масштабирование, навигацию, отображение сетки, векторов движения, а также позволяет легко создавать векторные изображения.</para>
+	<para lang="ru">VShell предоставляет пользователю интерфейс для работы с такими элементами управления, как окна ввода, 
+		выключатели, группы переключателей и слайдеры.</para>
+	<para lang="ru">Функции библиотеки можно вызывать как из консольных приложений (из функции main), 
+		так и оконных приложений (из функции WinMain).</para>
+</chapter>
+
+<chapter>
+	<title lang="ru">Использование VShell</title>
+	<section>
+		<title lang="ru">Подключаемые модули и заголовочные файлы</title>
+		<para lang="ru">Для работы с программным модулем необходимо включить файл VShell.dll в область "видимости" операционной системы. 
+			Наилучшим решением будет создание переменной среды окружения, например, с именем VSHELL, в которой записывается 
+			путь к каталогам дистрибутива и добавление в переменную окружения PATH строчки %VSHELL%\bin. </para>
+		<para lang="ru">Каталог дистрибутива содержит 5 подкаталогов:</para>
+		<calloutlist>
+			<callout lang="ru">bin - содержит динамически подключаемую библиотеку VShell32.dll (для 32-х бтовой платформы) или VShell64.dll (для 64-х бтовой платформы) и примеры</callout>
+			<callout lang="ru">doc - содержит файл справки  VShell.chm</callout>			
+			<callout lang="ru">include - содержит заголовочный файл с описанием функций библиотеки</callout>
+			<callout lang="ru">lib - содержит подлкючаемый модуль для раннего связывания VShell32.lib (для 32-х бтовой платформы) или VShell64.dll (для 64-х бтовой платформы)</callout>
+			<callout lang="ru">examples - примеры использования библиотеки</callout>
+		</calloutlist>			
+		<para lang="ru">Для использования библиотеки С/С++ программах включите в исходный файл директиву #include "VShell.h". 
+			Если используется среда разработки VC++6.0 / 7.0, то для раннего связывания подключите к проекту файл VShell32.lib (VShell64.lib). 
+			Используйте переменную окружения VSHELL32 (VSHELL64)  для задания пути к файлам VShell.h и VShell32.lib (VShell64.lib).</para>
+					
+	</section>
+	<section>
+		<title lang="ru">Алгоритм работы VShell</title>
+		<para lang="ru">Для эффективного использования программного модуля необходимо понимать принцип работы VShell. 
+			Обработка и вывод изображений происходит итеративно, по одному кадру за итерацию. 
+			Одна итерация включает в себя загрузку изображения (если необходимо обрабатывать раннее созданное изображение), 
+			собственно обработку изображения и вывод изображения в заданное окно. Перед запуском цикла обработки необходимо 
+			инициализировать библиотеку и создать окна для вывода изображений.</para>
+		<para lang="ru">Для загрузки изображения необходимо задать источник, то есть путь к изображению (bmp файл), 
+			к последовательности изображений, или к AVI файлу. VShell поддерживает работу с растровыми изображениями 
+			с различной цветовой организацией: 1, 4, 8, 16, 24 и  32 бит на пиксель. </para>
+		<para lang="ru">При работе с последовательностью изображений необходимо задать путь и имя первого файла в последовательности. 
+			Имена файлов в последовательности должны формироваться из префикса (необязательно) и числа. 
+			Все числа должны последовательно возрастать и должны состоять из одинакового количества цифр. 
+			Максимальное количество цифр в числе - 6. Например, последовательность может выглядеть следующим образом: 
+			Img0000.bmp, Img0001.bmp, Img0002.bmp и так далее. Последовательность изображений обрабатывается циклически, 
+			то есть после загрузки последнего изображения вновь будет загружено первое изображение. Если в имени файла 
+			источника отсутствует число, или последовательность прерывается после первого изображения, то в каждой итерации 
+			будет загружаться одно и тоже изображение.</para>
+		<para lang="ru">При работе с AVI файлом следует указать его имя. Здесь также используется циклическая обработка, 
+			как и при работе с последовательностью растровых изображений. Следует учитывать, что при чтении AVI файла 
+			используются вызовы Video For Windows (VFW), поэтому декодер AVI должен быть совместим с VFW.</para>
+		<para lang="ru">Источник изображения можно указать в программе с помощью вызова <link linkend="FUNC_VS_BIND">VS_Bind()</link>.</para>
+		<para lang="ru">Если предполагается генерация новых изображений, то указание источника не требуется - 
+			достаточно создать окно с требуемыми характеристиками и выводить в него буфер с формированным изображением.</para>
+		<para lang="ru">В процессе обработки изображений можно на них накладывать векторную графику. Векторная графика всегда 
+			накладывается на изображение. Элементы векторной графики выводятся в том порядке, в котором их создавал разработчик.</para>
+	</section>	
+	<section>
+		<title lang="ru">Структура пользовательской программы</title>
+		<para lang="ru">Рассмотрим структуру программы на следующем примере:</para>
+		<programlisting>
+#include "VShell.h"
+void main()
+{
+  unsigned char *pbOriginal;
+  unsigned char *pbWork;  
+  S_VS_Pal pPal[256];
+
+  if(!VS_Init()){
+    return 0;
+  }
+  
+  if(!VS_Bind("Test.avi")){
+    return 0;
+  }
+  
+  VS_GetPalette(VS_SOURCE, pPal);
+  VS_CreateImage("Original", 1, VS_GetWidth(VS_SOURCE), VS_GetHeight(VS_SOURCE), VS_GetType(VS_SOURCE), pPal);
+  VS_CreateImage("Work", 2, VS_GetWidth(VS_SOURCE), VS_GetHeight(VS_SOURCE), RGB24, NULL);  
+  
+  pbOriginal = new unsigned char[VS_GetBufSize(1)];
+  pbWork = new unsigned char[VS_GetBufSize(2)];
+  
+  while(VS_Run()){
+    VS_GetData(VS_SOURCE, pbOriginal);
+    VS_SetData(1, pbOriginal);
+	 
+    VS_GetBGRData(VS_SOURCE, pbWork);
+    Work(pbWork, VS_GetWidth(VS_SOURCE), VS_GetHeight(VS_SOURCE));
+    VS_SetData(2, pbWork);	 
+
+    VS_Draw(VS_DRAW_ALL);
+  }
+  
+  delete [] pbOriginal;
+  delete [] pbWork;  
+}
+		</programlisting>
+		<para lang="ru">Для работы с функциями библиотеки необходимо подключить заголовочный файл и вызвать функцию инициализации 
+			(<link linkend="FUNC_VS_INIT">VS_Init()</link>). Далее вызывается функция <link linkend="FUNC_VS_BIND">VS_Bind()</link> для
+			задания источника изображений. Здесь источником изображений является AVI файл. Если связывание с источником прошло успешно, 
+			то можно создать окно для вывода источника (<link linkend="FUNC_VS_CREATE_IMAGE">VS_CreateImage()</link>) с идентификатором 1. 
+			На этом этапе доступны данные об источнике изображений: ширина, высота, палитра, цветовая организация. 
+			При создании первого окна указываются такие же параметры, как у источника, в том числе передаётся и палитра источника. 
+			Далее, создаётся второе окно для вывода обработанного изображения. Пусть это изображение будет с определённой цветовой организацией, 
+			то есть цветное изображение, 24 бита на пиксель (<link linkend="GR_ID_TYPES">VS_RGB24</link>). 
+			Для каждого из изображений выделяется буфер. Размер необходимого буфера можно получить с помощью вызова
+			<link linkend="FUNC_VS_GET_BUF_SIZE">VS_GetBufSize()</link>.</para> 
+		<para lang="ru">Далее запускается цикл обработки изображения. При этом Функция <link linkend="FUNC_VS_RUN">VS_Run()</link> 
+			заблокирует работу приложения до тех пор, пока пользователь не начнёт проигрывать AVI файл. В цикле происходит следующее:</para>
+		<calloutlist>
+			<callout lang="ru">Копирование визуальных данных кадра в буфер pbOriginal (<link linkend="FUNC_VS_GET_DATA">VS_GetData()</link>).</callout>
+			<callout lang="ru">Вывод кадра в первое окно (<link linkend="FUNC_VS_SET_DATA">VS_SetData()</link>).</callout>			
+			<callout lang="ru">Копирование визуальных данных кадра в буфер pbWork c преобразованием в 
+				<link linkend="GR_ID_TYPES">VS_RGB24</link> (<link linkend="FUNC_VS_GET_BGR_DATA">VS_GetBGRData()</link>).</callout>
+			<callout lang="ru">Вызывается некая функция обработки изображения Work() (здесь на приводится).</callout>
+			<callout lang="ru">Вывод результата обработки во второе окно (<link linkend="FUNC_VS_SET_DATA">VS_SetData()</link>).</callout>			
+		</calloutlist>
+		<para lang="ru">Последней операцией в цикле является отрисовка всех изображений (<link linkend="FUNC_VS_DRAW">VS_Draw()</link>).</para>
+		<para lang="ru">В цикле можно удалять и создавать окна, получить состояние мыши и элементов управления, наложить 
+			на изображение векторную графику и многое другое.</para>
+		<para lang="ru">Рекомендуется при работе с VShell придерживаться такой структуры программы, хотя возможны и другие варианты. 
+			Например, если разработчику нужно сгенерировать новое изображение, то можно вообще не задавать источник изображений.</para>	
+	</section>
+	<section>
+		<title lang="ru">Описание примеров</title>
+		<section>
+			<title lang="ru">AviPlayer</title>
+			<para lang="ru">Пример демонстрирует создание простого проигрывателя последовательностей изображений и AVI файлов.
+				В функцию <link linkend="FUNC_VS_BIND">VS_Bind()</link> передаётся NULL, что позволяет пользователю выбрать источник 
+				после запуска приложения. В примере создаётся окно для вывода изображений совместимое с источником.</para>
+		</section>
+		<section>
+			<title lang="ru">SmoothFilter</title>
+			<para lang="ru">Пример демонстрирует программу, в которой заданное изображение обрабатывается сглаживающим фильтром.
+				В функции <link linkend="FUNC_VS_BIND">VS_Bind()</link> явно задаётся путь к изображению - источнику. 
+				В примере создаётся два окна: для вывода источника и результата обработки. Размер сглаживающего фильтра задаётся в окне ввода, 
+				поэтому в примере демонстрируется ещё и работа с элементом управления. Чтобы увидеть окно ввода нажмите кнопку 
+				<inlinegraphic fileref="Images/TB_Controls.gif" format="GIF" width="16" depth="15"/> на панели инструментов. После ввода размера фильтра
+				нажмите клавишу &lt;ENTER&gt; для того, чтобы показать VShell, что ввод окончен.</para>
+		</section>
+		<section>
+			<title lang="ru">VectorGraph</title>
+			<para lang="ru">Пример демонстрирует построение изображений с использованием векторной графики.
+				Источник изображений не задаётся. Векторная графика накладывается на пустой буфер (на чёрном цвете). 
+				В примере для вывода графики используются 2 окна: в первое выводиться целочисленная векторная графика, 
+				во второе - графика с числами с плавающей точкой. Для того, чтобы увидеть особенности векторной графики с
+				плавающей точкой необходимо увеличить изображение.</para>
+		</section>		
+	</section>
+</chapter>
+
+<chapter>
+	<title lang="ru">Программная оболочка</title>
+	<section>
+		<title lang="ru">Оконный интерфейс</title>
+		<para lang="ru">VShell предоставляет пользователю программную оболочку для вывода изображений. 
+			Программная оболочка является MDI приложением, в котором выводятся пользовательские изображения, 
+			каждое в своём дочернем окне. На рисунке представлен общий вид программной оболочки:</para>	
+		<figure lang="ru"><graphic fileref="Images/Common_ru.gif" format="GIF" align="Center" width="723" depth="587"/></figure>		
+		<para lang="ru">Здесь загружено два изображения в дочерние MDI окна: оригинальное изображение и результат 
+			работы сглаживающего фильтра. В верхней части окна находятся меню программы и панель инструментов. Для быстрого вызова некоторых
+			элементов меню можно воспользоваться всплывающим меню, которое вызывается нажатием правой кнопки мыши на изображении. 
+			Справа располагается специальное окно для размещения элементов управления. На рисунке показан один элемент 
+			управления - поле ввода для задания размера сглаживающего фильтра.</para>
+		<para lang="ru">В нижней части окна приложения располагается строка состояния, 
+			которая разбита на 4 части. В первой части строки отображаются координаты курсора мыши в дочернем окне. Во второй части строки 
+			отображаются цветовые компоненты (RGB) пикселя, на который наведён курсор мыши, а также значение пикселя, 
+			взятое непосредственно из буфера изображения (представлено в шестнадцатеричной системе). В третью часть строки выводятся 
+			координаты ячейки сетки и координаты блока векторов движения, на который указывает курсор мыши. В четвёртую часть строки выводится номер 
+			текущего кадра источника изображений, общий счётчик 
+			кадров и количество кадров в секунду (FPS).</para>
+		<section id="TOOLBAR">
+			<title lang="ru">Панель инструментов приложения</title>
+			<para lang="ru" id="TB_RESET">Кнопка <inlinegraphic fileref="Images/TB_Reset.gif" format="GIF" width="16" depth="15"/> сбрасывает счётчик кадров последовательности изображений. 
+				Если после проигрывания части последовательности нажать на эту кнопку, то изображения начнут загружтся снова, 
+				начиная с первого. </para>
+			<para lang="ru" id="TB_RUN">Кнопка <inlinegraphic fileref="Images/TB_RunForward.gif" format="GIF" width="16" depth="15"/> запускает цикл загрузки и отображения 
+				изображений в правильном порядке, начиная от первого. Последовательности и AVI файлы проигрываются циклически, 
+				то есть после отображения последнего кадра будет загружен первый и т. д.</para>
+			<para lang="ru" id="TB_PAUSE">Кнопка <inlinegraphic fileref="Images/TB_Pause.gif" format="GIF" width="16" depth="15"/> отключает функцию загрузки следующего/предыдущего изображения. 
+				Если нажаты одновременно кнопки "Пауза" и "Запуск", то запустится только цикл отображения изображений, то есть всегда будет 
+				загружаться один и тот же кадр последовательности, без перехода к следующему/предыдущему кадру. Эта кнопка служит для того, чтобы можно было 
+				приостановить обработку последовательности изображений и сфокусироваться на обработке одного кадра.</para>
+			<para lang="ru" id="TB_STEP">Кнопка <inlinegraphic fileref="Images/TB_StepForward.gif" format="GIF" width="16" depth="15"/> запускает одну итерацию цикла загрузки и 
+				отображения следующего кадра (шаг вперёд).</para>
+			<para lang="ru" id="TB_RUNB">Кнопка <inlinegraphic fileref="Images/TB_RunBack.gif" format="GIF" width="16" depth="15"/> запускает цикл загрузки и отображения 
+				изображений в обратном порядке, начиная от последнего кадра. Последовательности и AVI файлы проигрываются циклически, 
+				то есть после отображения первого кадра будет загружен последний и т. д.</para>
+			<para lang="ru" id="TB_STEPB">Кнопка <inlinegraphic fileref="Images/TB_StepBack.gif" format="GIF" width="16" depth="15"/> запускает одну итерацию цикла загрузки и 
+				отображения предыдущего кадра (шаг назад).</para>
+			<para lang="ru" id="TB_DRAG">Кнопка <inlinegraphic fileref="Images/TB_Drag.gif" format="GIF" width="16" depth="15"/> позволяет перемещать изображение внутри окна. 
+				Используется для навигации по увеличенному изображению.</para>
+			<para lang="ru" id="TB_SCALE">Кнопка <inlinegraphic fileref="Images/TB_Scale.gif" format="GIF" width="16" depth="15"/> позволяет увеличить изображение. 
+				Для уменьшения увеличенного изображения удерживайте клавишу &lt;SHIFT&gt;</para>
+			<para lang="ru" id="TB_ALIGN">Кнопка <inlinegraphic fileref="Images/TB_Align.gif" format="GIF" width="16" depth="15"/> привязывает размер окна к размеру изображения. 
+				Используется при масштабировании изображений.</para>
+			<para lang="ru" id="TB_VECTORS">Кнопка <inlinegraphic fileref="Images/TB_Vectors.gif" format="GIF" width="16" depth="15"/> включает или выключает отображение векторов движения.</para>
+			<para lang="ru" id="TB_GRID">Кнопка <inlinegraphic fileref="Images/TB_Grid.gif" format="GIF" width="16" depth="15"/> включает или выключает отображение сетки.</para>
+			<para lang="ru" id="TB_USER_GRAPH">Кнопка <inlinegraphic fileref="Images/TB_UserGraph.gif" format="GIF" width="16" depth="15"/> включает или выключает отображение 
+				пользовательской вектороной графики. Особенность векторной графики состоит в том, что при масштабировании изображений 
+				её элементы сохраняют свои параметры, такие, например, как ширина линии, при этом все координаты векторной графики 
+				масштабируются вместе с изображением. Векторную графику строит сам пользователь с помощью функций библиотеки VShell.</para>
+			<para lang="ru" id="TB_RASTER">Кнопка <inlinegraphic fileref="Images/TB_Raster.gif" format="GIF" width="16" depth="15"/> включает или выключает растеризацию векторной графики.
+				Этот эффект заметен при увеличении изображения на которое наложена векторная графика.
+				На рисунке показана линия, наложенная на увеличенное в 16 раз изображение. Слева - растеризация выключена, справа - включена.</para>
+			<figure lang="ru"><graphic fileref="Images/LineRaster.gif" format="GIF" align="Center" width="510" depth="220"/></figure>
+			<para lang="ru" id="TB_CONTROLS">Кнопка <inlinegraphic fileref="Images/TB_Controls.gif" format="GIF" width="16" depth="15"/> показывает или прячет 
+				специальное окно для элементов управления (выводится в правой части окна приложения).</para>
+			<para lang="ru" id="TB_SAVE_SETTINGS">Кнопка <inlinegraphic fileref="Images/TB_SaveSettings.gif" format="GIF" width="16" depth="15"/> сохраняет контекст VShell.
+				При этом в конфигурационный файл записываются следующие параметры приложения:</para>
+			<calloutlist>
+				<callout lang="ru">Текущий размер и позиция главного окна приложения.</callout>
+				<callout lang="ru">Текущий размер и позиция всех дочерних окон.</callout>			
+				<callout lang="ru">Состояние меню и панели инструментов.</callout>
+			</calloutlist>	
+			<para lang="ru">Контекст VShell сохраняется в файле VShell.dat в той же директории, окуда стартовало приложение. 
+				При последующих запусках приложения контекст VShell восстанавливается в соответствии с сохранёнными параметрами. 
+				ВНИМАНИЕ: файл VShell.dat является бинарным файлом и его не рекомендуется модифицировать. Если требуется вернуться к параметрам 
+				по умолчанию, можно просто удалить этот файл.</para>					
+			<para lang="ru" id="TB_SAVE_CTRL_SETTINGS">Кнопка <inlinegraphic fileref="Images/TB_SaveControlSettings.gif" format="GIF" width="16" depth="15"/> сохраняет параметры 
+				элементов управления, такие как состояние слайдеров, переключателей, содержимое окон ввода и т. д. При этом требуется указать имя файла для
+				сохранения этих параметров.</para>
+			<para lang="ru" id="TB_LOAD_CTRL_SETTINGS">Кнопка <inlinegraphic fileref="Images/TB_LoadControlSettings.gif" format="GIF" width="16" depth="15"/> загружает параметры 
+				элементов управления, такие как состояние слайдеров, переключателей, содержимое окон ввода и т. д. При этом требуется указать имя файла для
+				загрузки этих параметров.</para>
+		</section>
+		<section>
+			<title lang="ru">Меню приложения</title>
+			<section>
+				<title lang="ru">Файл</title>
+				<para lang="ru"><emphasis>Сохранить изображение</emphasis> - сохранение отдельного изображения. При запущенном цикле опция 
+					не доступна, так как во время проигрывания последовательности не известно, какое именно изображение следует сохранить. 
+					Для сохранения изображения необходимо остановить проигрывание.</para>
+				<para lang="ru"><emphasis>Сохранить последовательность</emphasis> - сохранение последовательности изображений в AVI файл, или 
+					в последовательность растровых изображений.</para>
+				<para lang="ru"><emphasis>Сохранить контекст VShell</emphasis> - см. описание кнопки <link linkend="TB_SAVE_SETTINGS">
+					<inlinegraphic fileref="Images/TB_SaveSettings.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Сохранить контекст эл. управления</emphasis> - см. описание кнопки <link linkend="TB_SAVE_CTRL_SETTINGS">
+					<inlinegraphic fileref="Images/TB_SaveControlSettings.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Загрузить контекст эл. управления</emphasis>  - см. описание кнопки <link linkend="TB_LOAD_CTRL_SETTINGS">
+					<inlinegraphic fileref="Images/TB_LoadControlSettings.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Выход</emphasis> - выход из приложения.</para>
+			</section>
+			<section>
+				<title lang="ru">Операции</title>
+				<para lang="ru"><emphasis>Cброс</emphasis> - см. описание кнопки <link linkend="TB_RESET">
+					<inlinegraphic fileref="Images/TB_Reset.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Запуск вперёд</emphasis> - см. описание кнопки <link linkend="TB_RUN">
+					<inlinegraphic fileref="Images/TB_RunForward.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Пауза</emphasis> - см. описание кнопки <link linkend="TB_PAUSE">
+					<inlinegraphic fileref="Images/TB_Pause.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Шаг вперёд</emphasis> - см. описание кнопки <link linkend="TB_STEP">
+					<inlinegraphic fileref="Images/TB_StepForward.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Запуск назад</emphasis> - см. описание кнопки <link linkend="TB_RUNB">
+					<inlinegraphic fileref="Images/TB_RunBack.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Шаг назад</emphasis> - см. описание кнопки <link linkend="TB_STEPB">
+					<inlinegraphic fileref="Images/TB_StepBack.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Навигация</emphasis> - см. описание кнопки <link linkend="TB_DRAG">
+					<inlinegraphic fileref="Images/TB_Drag.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Масштабирование</emphasis> - см. описание кнопки <link linkend="TB_SCALE">
+					<inlinegraphic fileref="Images/TB_Scale.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Векторы</emphasis> - см. описание кнопки <link linkend="TB_VECTORS">
+					<inlinegraphic fileref="Images/TB_Vectors.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Сетка</emphasis> - см. описание кнопки <link linkend="TB_GRID">
+					<inlinegraphic fileref="Images/TB_Grid.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Размер окна по изображению</emphasis> - см. описание кнопки <link linkend="TB_ALIGN">
+					<inlinegraphic fileref="Images/TB_Align.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Растеризовать</emphasis> - см. описание кнопки <link linkend="TB_RASTER">
+					<inlinegraphic fileref="Images/TB_Raster.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Векторная графика</emphasis> - см. описание кнопки <link linkend="TB_USER_GRAPH">
+					<inlinegraphic fileref="Images/TB_UserGraph.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+				<para lang="ru"><emphasis>Переполнения</emphasis> - включение или выключение отображения переполнения. Переполнения 
+					отображаются только для изображений типа <link linkend="GR_ID_TYPES">RGB8_16</link> или <link linkend="GR_ID_TYPES">RGB8_32</link>,
+					при этом красным цветом подсвечиваются пиксели, значения которых выше 128 и синим цветом - пиксели со значениями меньшими,
+					чем (-128).</para>
+			</section>
+			<section>
+				<title lang="ru">Настройки</title>
+				<para lang="ru"><emphasis>Векторы</emphasis> - задание цвета по умолчанию для отображения векторов движения.</para>
+				<para lang="ru"><emphasis>Сетка</emphasis> - задание размера и цвета для отображения сетки.</para>
+				<para lang="ru"><emphasis>Яркость/Контрастность</emphasis> - опция позволяет включить преобразование изображения непосредственно 
+					перед его выводом, и настроить такие параметры преобразования как яркость и контрастность. 
+					Значения яркости и контрастности находятся в диапазоне от -128 до +127 включительно. 
+					Для изображений типа <link linkend="GR_ID_TYPES">RGB8_8/RGB8_16/RGB8_32</link> вместо контрастности 
+					используется множитель. Параметры множителя можно задать в настройках (кнопка "настройка" под слайдером).</para>
+			<para lang="ru"><emphasis>Сохранить последовательность кадров как...</emphasis> - опция позволяет определить имя файла в который будет сохранятся последовательность кадров. Если это имя не задано, то при каждой попытке сохранить последовательность будет выводится окно выбора файла для сохранения.</para></section>
+			<section>
+				<title lang="ru">Окно</title>
+				<para lang="ru"><emphasis>Элементы управления</emphasis> - см. описание кнопки <link linkend="TB_CONTROLS">
+					<inlinegraphic fileref="Images/TB_Controls.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов</para>
+			</section>
+			<section>
+				<title lang="ru">Помощь</title>
+				<para lang="ru"><emphasis>О программе</emphasis> - вызов окна с информацией о программе.</para>
+			</section>
+		</section>
+		<section>
+			<title lang="ru">Быстрые клавиши</title>
+			<para lang="ru"><emphasis>Alt+F1</emphasis> - сохранение отдельного изображения. При запущенном цикле опция 
+				не доступна, так как во время проигрывания последовательности не известно, какое именно изображение следует сохранить. 
+				Для сохранения изображения необходимо остановить проигрывание.</para>
+			<para lang="ru"><emphasis>Alt+F2</emphasis> - сохранение последовательности изображений в AVI файл, или 
+				в последовательность растровых изображений.</para>
+			<para lang="ru"><emphasis>Alt+F3</emphasis> - сохранить контекст VShell (см. описание кнопки <link linkend="TB_SAVE_SETTINGS">
+				<inlinegraphic fileref="Images/TB_SaveSettings.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>Alt+F4</emphasis> - выход из приложения.</para>
+			<para lang="ru"><emphasis>Ctrl+Home</emphasis> - сброс (см. описание кнопки <link linkend="TB_RESET">
+				<inlinegraphic fileref="Images/TB_Reset.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>Ctrl+Up</emphasis> - запуск вперёд (см. описание кнопки <link linkend="TB_RUN">
+				<inlinegraphic fileref="Images/TB_RunForward.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>Pause</emphasis> - пауза (см. описание кнопки <link linkend="TB_PAUSE">
+				<inlinegraphic fileref="Images/TB_Pause.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>Ctrl+Right</emphasis> - шаг вперёд (см. описание кнопки <link linkend="TB_STEP">
+				<inlinegraphic fileref="Images/TB_StepForward.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>Ctrl+Down</emphasis> - запуск назад (см. описание кнопки <link linkend="TB_RUNB">
+				<inlinegraphic fileref="Images/TB_RunBack.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>Ctrl+Left</emphasis> - шаг назад (см. описание кнопки <link linkend="TB_STEPB">
+				<inlinegraphic fileref="Images/TB_StepBack.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>F2</emphasis> - навигация (см. описание кнопки <link linkend="TB_DRAG">
+				<inlinegraphic fileref="Images/TB_Drag.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>F3</emphasis> - масштабирование (см. описание кнопки <link linkend="TB_SCALE">
+				<inlinegraphic fileref="Images/TB_Scale.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>F4</emphasis> - размер окна по изображению (см. описание кнопки <link linkend="TB_ALIGN">
+				<inlinegraphic fileref="Images/TB_Align.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>F5</emphasis> - векторная графика (см. описание кнопки <link linkend="TB_USER_GRAPH">
+				<inlinegraphic fileref="Images/TB_UserGraph.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>F6</emphasis> - растеризовать (см. описание кнопки <link linkend="TB_RASTER">
+				<inlinegraphic fileref="Images/TB_Raster.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>F7</emphasis> - элементы управления (см. описание кнопки <link linkend="TB_CONTROLS">
+				<inlinegraphic fileref="Images/TB_Controls.gif" format="GIF" width="16" depth="15"/></link> на пенели инструментов)</para>
+			<para lang="ru"><emphasis>F1</emphasis> - вызов окна с информацией о программе.</para>
+			<para lang="ru"><emphasis>Alt++</emphasis> - увеличение изображения. Размеры окна изменяются в соответствии с изображением</para>
+			<para lang="ru"><emphasis>Alt+-</emphasis> - уменьшение изображения. Размеры окна изменяются в соответствии с изображением</para>						
+		</section>
+	</section>
+</chapter>
+
+<chapter>
+ 	<title lang="ru">Описание функций, структур и идентификаторов VShell</title>
+	<section>
+		<title lang="ru">Функции VShell</title>
+		<section>
+			<title lang="ru">Функции инициализации и организации цикла обработки изображений</title><section id="FUNC_VS_BIND">
+				<title lang="ru">VS_Bind</title>
+				<para lang="ru">Функция связывания источника с заданной последовательностью кадров или AVI файлом.</para>
+				<programlisting>bool VS_Bind(
+			PSTR szFileName
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis></para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>szFileName</emphasis> имя файла, содержащего первый кадр последовательности 
+						изображений, или имя AVI файла.</callout>
+				</calloutlist>	
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, 
+					в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Источником является последовательность BMP файлов или AVI файл. 
+					Имена файлов с изображениями (BMP) должны формироваться из префикса (необязательно) и числа. 
+					Все числа должны последовательно возрастать и должны состоять из одинакового количества цифр. Максимальное 
+					количество цифр в числе - 6. Например, последовательность может выглядеть следующим образом: 
+					Img0000.bmp, Img0001.bmp, Img0002.bmp и так далее. Также, в качестве источника можно задать имя файла, 
+					не содержащего числа. В этом случае всегда будет отображаться только один, заданный кадр. Отображение кадров 
+					происходит циклически, то есть после считывания последнего кадра будет считан первый кадр. Если в параметре функции 
+					передать NULL, или если программа не найдёт файл с заданным именем, то функция покажет диалоговое окно, 
+					в котором можно выбрать первый файл последовательности изображений или AVI файл.</para>
+			</section><section id="FUNC_VS_CREATE_IMAGE">
+				<title lang="ru">VS_CreateImage</title>
+				<para lang="ru">Создание окна для вывода изображения.</para>
+				<programlisting>bool VS_CreateImage(
+			char *szName, 
+			int nID, 
+			int nWidth, 
+			int nHeight, 
+			int nType, 
+			S_VS_Pal *pPalette
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis></para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>szName</emphasis> название окна. Передаваемая строка будет отображена в заголовке окна.</callout>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна - уникальное целочисленное значение. 
+						Все дальнейшие обращения к окну и к изображению, связанному с этим окном будут происходить через заданный идентификатор. 
+						Если уже создано окно с таким идентификатором, то функция возвратит false и окно не будет создано.</callout>
+					<callout lang="ru"><emphasis>nWidth</emphasis> ширина клиентской области окна, или ширина выводимого в 
+						данное окно изображения. Ширина задаётся в пикселях.</callout>
+					<callout lang="ru"><emphasis>nHeight</emphasis> высота (количество строк) клиентской области окна, 
+						или высота выводимого в данное окно изображения. Высота задаётся в пикселях.</callout>
+					<callout lang="ru"><emphasis>nType</emphasis> <link linkend="GR_ID_TYPES"> тип выводимого изображения</link> - одна из констант, 
+						задающая тип изображения. Тип определяет цветовую модель изображения.</callout>
+					<callout lang="ru"><emphasis>pPalette</emphasis> палитра. Указатель на массив структур <link linkend="STRUCT_PAL">S_VS_Pal</link>. 
+						Значение этого параметра игнорируется для непалитровых изображений (см. описание типов изображений). 
+						Если этот параметр установлен в NULL для палитровых изображений, то будет использоваться полутоновая 
+						(градации серого) палитра.</callout>
+				</calloutlist>						
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция создаёт дочернее MDI окно для вывода изображения 
+					размером nWidth на nHeight пикселей и цветовой организацией, заданной параметром nType и палитрой.</para>
+			</section><section id="FUNC_VS_DELETE_IMAGE">
+				<title lang="ru">VS_DeleteImage</title>
+				<para lang="ru">Удаление раннее созданного окна для вывода изображений.</para>
+				<programlisting>bool VS_DeleteImage(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор удаляемого окна.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция удаляет раннее созданное окно для вывода изображений 
+					с заданным идентификатором и освобождает все связанные с окном ресурсы. Идентификатор удалённого окна можно 
+					использовать повторно при создании нового окна.</para>
+			</section>
+			<section id="FUNC_VS_DRAW">
+				<title lang="ru">VS_Draw</title>
+				<para lang="ru">Вывод изображения</para>
+				<programlisting>bool VS_Draw(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция выводит раннее установленные функцией 
+					<link linkend="FUNC_VS_SET_DATA">VS_SetData()</link> данные в заданное окно. Если в параметре задан идентификатор 
+					<link linkend="GR_ID_DRAW_ALL">VS_DRAW_ALL</link>, то будут отрисованы изображения во всех созданных окнах.</para>
+			</section><section id="FUNC_VS_GET_MOUSE_STATUS">
+				<title lang="ru">VS_GetMouseStatus</title>
+				<para lang="ru">Получение состояния мыши</para>
+				<programlisting>bool VS_GetMouseStatus(
+			S_VSMouseStatus *pMouseStatus
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>pMouseStatus</emphasis> структура с описанием состояния мыши.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция заполняет структуру с описанием состояния мыши 
+					<link linkend="STRUCT_MOUSE_STATUS">S_VS_MouseStatus</link> на момент вызова функции VS_GetMouseStatus().</para>
+			</section><section id="FUNC_VS_GET_SRC_FRAME_NUM">
+				<title lang="ru">VS_GetSrcFrameNum</title>
+				<para lang="ru">Получение текущего номера кадра источника.</para>
+				<programlisting>int VS_GetSrcFrameNum();</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> текущий номер кадра источника, начиная с 1.</para>
+			</section>
+			
+			
+			
+			<section id="FUNC_VS_GET_SRC_FRAMES">
+				<title lang="ru">VS_GetSrcFrames</title>
+				<para lang="ru">Получение количества кадров в AVI файле, или в последовательности изображений</para>
+				<programlisting>int VS_GetSrcFrames();</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> количество кадров в источнике изображений 
+					(в AVI файле, или в последовательности изображений).</para>						
+			</section>
+			<section id="FUNC_VS_INIT">
+				<title lang="ru">VS_Init</title>
+				<para lang="ru">Инициализация библиотеки.</para>
+				<programlisting>bool VS_Init();</programlisting>
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функцию инициализации необходимо вызвать до начала вызовов других функций библиотеки.</para>
+			</section><section id="FUNC_VS_OP_PAUSE">
+				<title lang="ru">VS_OpPause</title>
+				<para lang="ru">.</para>
+				<programlisting>bool VS_OpPause();</programlisting>
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция производит действие, эквивалентное нажатию кнопки <inlinegraphic fileref="Images/TB_Pause.gif" format="GIF" width="16" depth="15"/> на панели инструментов.</para>
+			</section><section id="FUNC_VS_OP_RESET">
+				<title lang="ru">VS_OpReset</title>
+				<para lang="ru">.</para>
+				<programlisting>bool VS_OpReset();</programlisting>
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция производит действие, эквивалентное нажатию кнопки <inlinegraphic fileref="Images/TB_Reset.gif" format="GIF" width="16" depth="15"/> на панели инструментов.</para>
+			</section><section id="FUNC_VS_OP_RUN_BACKWARD">
+				<title lang="ru">VS_OpRunBackward</title>
+				<para lang="ru">.</para>
+				<programlisting>bool VS_OpRunBackward();</programlisting>
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция производит действие, эквивалентное нажатию кнопки <inlinegraphic fileref="Images/TB_RunBack.gif" format="GIF" width="16" depth="15"/> на панели инструментов.</para>
+			</section><section id="FUNC_VS_OP_RUN_FORWARD">
+				<title lang="ru">VS_OpRunForward</title>
+				<para lang="ru">.</para>
+				<programlisting>bool VS_OpRunForward();</programlisting>
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция производит действие, эквивалентное нажатию кнопки <inlinegraphic fileref="Images/TB_RunForward.gif" format="GIF" width="16" depth="15"/> на панели инструментов.</para>
+			</section><section id="FUNC_VS_OP_STEP_BACKWARD">
+				<title lang="ru">VS_OpStepBackward</title>
+				<para lang="ru">.</para>
+				<programlisting>bool VS_OpStepBackward();</programlisting>
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция производит действие, эквивалентное нажатию кнопки <inlinegraphic fileref="Images/TB_StepBack.gif" format="GIF" width="16" depth="15"/> на панели инструментов.</para>
+			</section><section id="FUNC_VS_OP_STEP_FORWARD">
+				<title lang="ru">VS_OpStepForward</title>
+				<para lang="ru">.</para>
+				<programlisting>bool VS_OpStepForward();</programlisting>
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция производит действие, эквивалентное нажатию кнопки <inlinegraphic fileref="Images/TB_StepForward.gif" format="GIF" width="16" depth="15"/> на панели инструментов.</para>
+			</section>
+			<section id="FUNC_VS_RELEASE">
+				<title lang="ru">VS_Release</title>
+				<para lang="ru">Деинициализация библиотеки.</para>
+				<programlisting>void VS_Release();</programlisting>
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> нет.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция закрывает окно приложения и освобождает занимаемые ресурсы. Эту функцию можно 
+					не вызывать, если окно приложения было закрыто пользователем.</para>
+			</section>
+			<section id="FUNC_VS_RUN">
+				<title lang="ru">VS_Run</title>
+				<para lang="ru">Функция для организации основного программного цикла.</para>
+				<programlisting>int VS_Run();</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> нет.</para>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> Функция возвращает комбинацию <link linkend="GR_ID_STATUS">флагов состояния</link> (логическоё "или").</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> В основном программном цикле происходит считывание очередного 
+					кадра из источника (если источник был задан, то есть если была вызвана функция <link linkend="FUNC_VS_BIND">VS_Bind()</link>) 
+					и отображение изображений. Функция блокирует работу программы и не возвращает управление до тех пор, 
+					пока не произойдёт одно из следующих событий:</para> 
+				<calloutlist>
+					<callout lang="ru">Пользователь начал последовательный вывод видеокадров.</callout>
+					<callout lang="ru">Пользователь начал пошаговый вывод видеокадров.</callout>			
+					<callout lang="ru">Пользователь закрыл программную "оболочку".</callout>
+				</calloutlist>			
+			</section><section id="FUNC_VS_SEEK">
+				<title lang="ru">VS_Seek</title>
+				<para lang="ru">Переход к заданному кадру</para>
+				<programlisting>bool VS_Seek(
+			int nFrameNum
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nFrameNum</emphasis> номер кадра.</callout>
+					
+				 	
+					
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> нет.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция устанавливает номер кадра с которого будет начинаться новая последовательность кадров. Если nFrameNum меньше номера первого кадра, то новая последовательность будет начинаться с первого кадра. Если nFrameNum больше номера последнего кадра, то новая последовательность будет начинаться с последнего кадра. </para>
+			</section>
+			
+			
+			
+			<section id="FUNC_VS_SET_VECTORS">
+				<title lang="ru">VS_SetVectors</title>
+				<para lang="ru">Установка векторов движения</para>
+				<programlisting>bool VS_SetVectors(
+			int nID, 
+			int nBlockSize, 
+			S_VS_Point *pVectors, 
+			unsigned int unVectorsColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nBlockSize</emphasis> размер блока NxN в пикселях.</callout>
+				 	<callout lang="ru"><emphasis>pVectors</emphasis> буфер с данными векторов движения.</callout>
+					<callout lang="ru"><emphasis>unVectorsColor</emphasis> цвет для отрисовки векторов движения.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция передаёт данные о векторах движения, которые могут быть 
+					наложены на ассоциированное с окном с идентификатором nID изображение. Количество передаваемых векторов зависит 
+					от размера изображения и размера блока nBlockSize. Количество векторов можно определить по формуле: 
+					(ширина * высота) / (nBlockSize * nBlockSize). Данные о каждом векторе представлены в структуре 
+					<link linkend="STRUCT_POINT">S_VS_Point</link>. Бывают случаи, когда требуется пометить вектор как "несуществующий" - признак того, 
+					что данный блок не имеет вектора движения. Следует отличать такие векторы от нулевых векторов. 
+					Нулевые векторы всё же помечаются точкой цветом, который получается инверсией цвета векторов, 
+					а отсутствующие векторы никак не помечаются. Пометить вектор как несуществующий можно, установив 
+					в компоненте nX значение <link linkend="GR_ID_VECTOR">VS_NULL_VEC</link>. В функцию можно передать 
+					значение цвета для отображения векторов. Цвет вектора задаётся в 32-х битовом слове. 
+					Цвет в этом слове определяется следующим образом: в первом (младшем) байте содержится интенсивность 
+					красного цвета, во втором байте содержится интенсивность зелёного цвета, в третьем байте содержится 
+					интенсивность голубого цвета, четвёртый байт не используется. Для формирования этого слова можно 
+					воспользоваться макросом RGB(), определённым в wingdi.h. Если параметр unVectorsColor установить 
+					в <link linkend="GR_ID_VECTOR">VS_DEF_VEC_COLOR</link>, то векторы будут отображаться цветом по умолчанию, 
+					который задаётся пользователем из приложения.</para>
+			</section>
+			<section id="FUNC_VS_SET_VECTORS_F">
+				<title lang="ru">VS_SetVectorsF</title>
+				<para lang="ru">Установка векторов движения</para>
+				<programlisting>bool VS_SetVectorsF(
+			int nID, 
+			int nBlockSize, 
+			S_VS_PointF *pVectors, 
+			unsigned int unVectorsColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nBlockSize</emphasis> размер блока NxN в пикселях.</callout>
+				 	<callout lang="ru"><emphasis>pVectors</emphasis> буфер с данными векторов движения.</callout>
+					<callout lang="ru"><emphasis>unVectorsColor</emphasis> цвет для отрисовки векторов движения.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция передаёт данные о векторах движения, которые могут быть 
+					наложены на ассоциированное с окном с идентификатором nID изображение. Количество передаваемых векторов зависит 
+					от размера изображения и размера блока nBlockSize. Количество векторов можно определить по формуле: 
+					(ширина * высота) /  (nBlockSize * nBlockSize). Данные о каждом векторе представлены в структуре 
+					<link linkend="STRUCT_POINT_F">S_VS_PointF</link>. Бывают случаи, когда требуется пометить вектор как "несуществующий" - признак того, 
+					что данный блок не имеет вектора движения. Следует отличать такие векторы от нулевых векторов. 
+					Нулевые векторы всё же помечаются точкой цветом, который получается инверсией цвета векторов, 
+					а отсутствующие векторы никак не помечаются. Пометить вектор как несуществующий можно, установив 
+					в компоненте fltX значение <link linkend="GR_ID_VECTOR">(float)VS_NULL_VEC</link>. В функцию можно передать 
+					значение цвета для отображения векторов. Цвет вектора задаётся в 32-х битовом слове. 
+					Цвет в этом слове определяется следующим образом: в первом (младшем) байте содержится интенсивность 
+					красного цвета, во втором байте содержится интенсивность зелёного цвета, в третьем байте содержится 
+					интенсивность голубого цвета, четвёртый байт не используется. Для формирования этого слова можно 
+					воспользоваться макросом RGB(), определённым в wingdi.h. Если параметр unVectorsColor установить 
+					в <link linkend="GR_ID_VECTOR">VS_DEF_VEC_COLOR</link>, то векторы будут отображаться цветом по умолчанию, 
+					который задаётся пользователем из приложения.</para>
+			</section>
+		<section id="FUNC_VS_TEXT">
+				<title lang="ru">VS_Text</title>
+				<para lang="ru">Отображение текста</para>
+				<programlisting>bool VS_Text(
+			const char *szText,
+			...
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>szText</emphasis> строка со спецификаторами форматирования.</callout>
+					<callout lang="ru"><emphasis>...</emphasis> аргументы.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция формирует строку с учётом спецификаторов форматирования и 
+					аргументов и выводит её в специальное текстовое MDI окно. Информацию о спецификаторах форматирования можно 
+					найти в описании функции printf() стандартной библиотеки ввода-вывода C. Функция VS_Text формирует строку 
+					также, как функция printf(). Специальное текстовое MDI окно создаётся и отображается, после первого вызова 
+					функции VS_Text(). Если VS_Text() не вызывается в пользовательской программе, то текстовое окно не создаётся. 
+					Отображаемый в окне текст можно просматривать с помощью прокрутки. Размер буфера для вывода текста ограничен, 
+					поэтому при внесении новой записи используется  циклический буфер, то есть при внесении новой записи в 
+					заполненный буфер уничтожается самая старая запись.  Вывод в текстовое окно можно рассматривать как альтернативу 
+					вывода сообщений на консольное окно.</para>
+			</section></section>
+		<section>
+			<title lang="ru">Функции получения и установки данных изображения</title>
+			<section id="FUNC_VS_GET_BGR_DATA">
+				<title lang="ru">VS_GetBGRData</title>
+				<para lang="ru">Получение цветных данных изображения</para>
+				<programlisting>bool VS_GetBGRData(
+			int nID, 
+			void *pvData
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pvData</emphasis> буфер для получаемых данных.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция получает визуальные данные от дочернего MDI окна с идентификатором, 
+					заданным параметром nID. Если в качестве идентификатора передано значение <link linkend="GR_ID_SOURCE">VS_SOURCE</link>, 
+					то будут получены данные от источника видеокадров. Получаемые данные всегда имеют тип <link linkend="GR_ID_TYPES">VS_RGB24</link> 
+					и размер, соответствующий размерам окна не зависимо от того какую цветовую организацию имеет окно. 
+					Следует следить за тем, чтобы буфер pvData имел размер, достаточный для размещения получаемых данных. 
+					Получить необходимый размер для буфера pvData можно с помощью вызовов <link linkend="FUNC_VS_GET_WIDTH">VS_GetWidth()</link> 
+					и <link linkend="FUNC_VS_GET_HEIGHT">VS_GetHeight()</link>. Требуемый размер буфера - это утроеное произведение 
+					ширины и высоты окна.</para>
+			</section>
+			<section id="FUNC_VS_GET_DATA">
+				<title lang="ru">VS_GetData</title>
+				<para lang="ru">Получение данных изображения</para>
+				<programlisting>bool VS_GetData(
+			int nID, 
+			void *pvData
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pvData</emphasis> буфер для получаемых данных.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция получает визуальные данные от дочернего MDI окна с идентификатором, 
+					заданным параметром nID. Если в качестве идентификатора передано значение <link linkend="GR_ID_SOURCE">VS_SOURCE</link>, 
+					то будут получены данные от источника видеокадров. Структура и размер (ширина, высота и цветовая организация изображения) 
+					получаемых данных соответствуют типу и размеру окна. Следует следить за тем, чтобы буфер pvData имел размер, 
+					достаточный для размещения получаемых данных. Получить необходимый размер для буфера pvData можно с помощью вызова 
+					<link linkend="FUNC_VS_GET_BUF_SIZE">VS_GetBufSize()</link>.</para>
+			</section>
+			<section id="FUNC_VS_GET_GRAY_DATA">
+				<title lang="ru">VS_GetGrayData</title>
+				<para lang="ru">Получение полутоновых (256 градаций серого цвета) данных изображения </para>
+				<programlisting>bool VS_GetGrayData(
+			int nID, 
+			void *pvData );</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pvData</emphasis> буфер для получаемых данных.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция получает визуальные данные от дочернего MDI окна с идентификатором, 
+					заданным параметром nID. Если в качестве идентификатора передано значение <link linkend="GR_ID_SOURCE">VS_SOURCE</link>, 
+					то будут получены данные от источника видеокадров. Получаемые данные всегда имеют тип <link linkend="GR_ID_TYPES">VS_RGB8</link> 
+					с полутоновой палитрой и размер, соответствующий размерам окна не зависимо от того какую цветовую организацию имеет окно. 
+					Следует следить за тем, чтобы буфер pvData имел размер, достаточный для размещения получаемых данных. 
+					Получить необходимый размер для буфера pvData можно с помощью вызовов <link linkend="FUNC_VS_GET_WIDTH">VS_GetWidth()</link> 
+					и <link linkend="FUNC_VS_GET_HEIGHT">VS_GetHeight()</link>. Требуемый размер буфера - это произведение ширины и высоты окна.</para>
+			</section>
+			
+		<section id="FUNC_VS_SET_DATA">
+				<title lang="ru">VS_SetData</title>
+				<para lang="ru">Установка данных изображения</para>
+				<programlisting>bool VS_SetData(
+			int nID, 
+			void *pvData
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pvData</emphasis> буфер передаваемых данных.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция передаёт визуальные данные дочернему MDI окну с идентификатором, 
+					заданным параметром nID. Структура и размер передаваемых данных (ширина, высота и цветовая организация изображения) 
+					должны соответствовать типу и размеру окна. Если  в первом параметре используется идентификатор 
+					<link linkend="GR_ID_SOURCE">VS_SOURCE</link>, то функция вернёт false, так как невозможно установить 
+					данные в источник изображений.</para>
+			</section></section>
+		<section>
+			<title lang="ru">Функции получения параметров изображения</title><section id="FUNC_VS_GET_BITS_PER_PIXEL">
+				<title lang="ru">VS_BitsPerPixel</title>
+				<para lang="ru">Получение количества битов на пиксель изображения</para>
+				<programlisting>int VS_GetBitsPerPixel(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> количество битов на пиксель ассоциированного с окном с 
+					идентификатором nID изображения.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Если в качестве идентификатора окна передано значение 
+					<link linkend="GR_ID_SOURCE">VS_SOURCE</link>, то будет возвращено количество битов на пиксель изображения источника видеокадров.</para>
+			</section>
+			
+			<section id="FUNC_VS_GET_BUF_SIZE">
+				<title lang="ru">VS_GetBufSize</title>
+				<para lang="ru">Получение размера буфера, необходимого для размещения изображения</para>
+				<programlisting>int VS_GetBufSize(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> размер буфера, необходимого для размещения ассоциированного 
+					с окном с идентификатором nID изображения.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Размер буфера возвращается в байтах. Если в качестве идентификатора 
+					окна передано значение <link linkend="GR_ID_SOURCE">VS_SOURCE</link>, то будет возвращён размер буфера изображения 
+					источника видеокадров.</para>
+			</section><section id="FUNC_VS_GET_HEIGHT">
+				<title lang="ru">VS_GetHeight</title>
+				<para lang="ru">Получение высоты изображения</para>
+				<programlisting>int VS_GetHeight(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> высота ассоциированного с окном с идентификатором nID 
+					изображения в пикселях.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Если в качестве идентификатора окна передано значение 
+					<link linkend="GR_ID_SOURCE">VS_SOURCE</link>, то будет возвращена высота изображения источника видеокадров.</para>
+			</section>
+			<section id="FUNC_VS_GET_TYPE">
+				<title lang="ru">VS_GetType</title>
+				<para lang="ru">Получение идентификатора типа изображения</para>
+				<programlisting>int VS_GetType(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> <link linkend="GR_ID_TYPES">идентификатор типа</link> 
+					ассоциированного с окном с идентификатором nID изображения в пикселях.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Если в качестве идентификатора окна передано значение 
+					<link linkend="GR_ID_SOURCE">VS_SOURCE</link>, то будет возвращён <link linkend="GR_ID_TYPES">идентификатор типа</link> 
+					источника видеокадров.</para>
+			</section>
+			
+			
+		<section id="FUNC_VS_GET_WIDTH">
+				<title lang="ru">VS_GetWidth</title>
+				<para lang="ru">Получение ширины изображения</para>
+				<programlisting>int VS_GetWidth(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> ширина ассоциированного с окном с идентификатором nID 
+					изображения в пикселях.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Если в качестве идентификатора окна передано значение 
+					<link linkend="GR_ID_SOURCE">VS_SOURCE</link>, то будет возвращена ширина изображения источника видеокадров.</para>
+			</section></section>
+		<section>
+			<title lang="ru">Функции для работы с палитрами</title><section id="FUNC_VS_CREATE_CUSTOM_PALETTE">
+			   	<title lang="ru">VS_CreateCustomPalette</title>
+				<para lang="ru">Функция создает кусочно-линейную палитру pPalette, интерполированную по массиву опорных точек</para>
+				<programlisting>void VS_CreateCustomPalette(
+    <link linkend="STRUCT_PAL">S_VS_Pal</link> *pPalette,
+    <link linkend="GR_ID_STOP_COLOR">VS_STOP_COLOR</link> *pStopColor, 
+    int count
+    );</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>pPalette</emphasis> генерируемая палитра.</callout>
+					<callout lang="ru"><emphasis>pStopColor</emphasis> массив опорных цветов.</callout>
+				<callout lang="ru"><emphasis>count</emphasis> длина массива pStopColor.</callout></calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> нет.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> значения палитры в диапазоне от 0 до pStopColor[0].index , заполняется значением pStopColor[0].rgb.
+Значения палитры в диапазоне от pStopColor[count-1].index до 255 , заполняется значением pStopColor[count-1].rgb.</para>
+			</section><section id="FUNC_VS_GET_PALETTE">
+			   	<title lang="ru">VS_GetPalette</title>
+				<para lang="ru">Получение палитры</para>
+				<programlisting>bool VS_GetPalette(
+			int nID, 
+    <link linkend="STRUCT_PAL">S_VS_Pal</link> *pPal
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPal</emphasis> буфер для получаемой палитры.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция получает палитру изображения, ассоциированного с окном 
+					с идентификатором nID. Получаемая палитра - это массив элементов <link linkend="STRUCT_PAL">S_VS_Pal</link>. 
+					Количество элементов в массиве определяется цветовой организацией изображения. Для 1 битовых изображений требуется 
+					2 элемента, для 4-х битовых изображений требуется 16 элементов, для 8-ми битовых изображений требуется 256 элементов. 
+					При получении палитры для не палитровых изображений функция возвращает false.</para>
+			</section><section id="FUNC_VS_SET_CIRCLE_PALETTE">
+				<title lang="ru">VS_SetCirclePalette</title>
+				<para lang="ru">Установка круговой палитры</para>
+				<programlisting>bool VS_SetCirclePalette(
+			int nID, 
+			int nColorDisp
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nColorDisp</emphasis> параметр, задающий поворот цветового круга. 
+						При nColorDisp=0 жёлтый цвет находится сверху, а синий снизу.</callout>				
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция устанавливает палитру для изображения, ассоциированного с окном 
+					с идентификатором nID. Устанавливаемая палитра - это палитра с плавно меняющимися цветами в следующем порядке: 
+					жёлтый - зелёный - циановый - голубой - пурпурный - красный, в зависимости от параметра nColorDisp. 
+					На рисунке показан цветовой круг и соответствующие ему значения при минимальном и максимальном значении пикселя 
+					(направление обхода - по часовой стрелке).</para>
+					<figure lang="ru"><graphic fileref="Images/Circles.gif" format="GIF" align="Center" width="338" depth="125"/></figure>
+				<calloutlist>
+					<callout lang="ru">а) при nColorDisp = 0.</callout>
+					<callout lang="ru">b) при nColorDisp = 63.</callout>
+					<callout lang="ru">c) при nColorDisp = 127.</callout>										
+				</calloutlist>				
+				<para lang="ru">При установке палитры для не палитровых изображений функция не производит никаких действий и возвращает true.</para>
+			</section><section id="FUNC_VS_SET_GRAY_PALETTE">
+				<title lang="ru">VS_SetGrayPalette</title>
+				<para lang="ru">Установка полутоновой (серой) палитры</para>
+				<programlisting>bool VS_SetGrayPalette(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция устанавливает палитру для изображения, ассоциированного с окном 
+					с идентификатором nID. Устанавливаемая палитра заполняется градациями серого цвета - от чёрного к белому. 
+					При установке палитры для не палитровых изображений функция не производит никаких действий и возвращает true.</para>
+			</section>		
+			<section id="FUNC_VS_SET_PALETTE">
+				<title lang="ru">VS_SetPalette</title>
+				<para lang="ru">Установка палитры</para>
+				<programlisting>bool VS_SetPalette(
+			int nID, 
+    <link linkend="STRUCT_PAL">S_VS_Pal</link> *pPal
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPal</emphasis> устанавливаемая палитра.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция устанавливает палитру для изображения, ассоциированного с окном 
+					с идентификатором nID. Устанавливаемая палитра - это массив элементов <link linkend="STRUCT_PAL">S_VS_Pal</link>. 
+					Количество элементов в массиве определяется цветовой организацией изображения. Для 1 битовых изображений требуется 
+					2 элемента, для 4-х битовых изображений требуется 16 элементов, для 8-ми битовых изображений требуется 256 элементов. 
+					При установке палитры для не палитровых изображений функция не производит никаких действий и возвращает true.</para>
+			</section>
+			
+			<section id="FUNC_VS_SET_RANDOM_PALETTE">
+				<title lang="ru">VS_SetRandomPalette</title>
+				<para lang="ru">Установка случайной палитры</para>
+				<programlisting>bool VS_SetRandomPalette(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция устанавливает палитру для изображения, ассоциированного с окном 
+					с идентификатором nID. Устанавливаемая палитра заполняется случайными значениями. 
+					При установке палитры для не палитровых изображений функция не производит никаких действий и возвращает true.</para>
+			</section>		
+						
+			
+		</section>
+		<section>
+			<title lang="ru">Функции для работы с элементами управления</title><section id="FUNC_VS_CHECK_RADIO">
+				<title lang="ru">VS_CheckRadio</title>
+				<para lang="ru">Включение переключателя</para>
+				<programlisting>bool VS_CheckRadio(
+			int nGroupID, 
+			int nRadioID, 
+			bool fCheck
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nGroupID</emphasis> идентификатор группы переключателей.</callout>
+					<callout lang="ru"><emphasis>nRadioID</emphasis> идентификатор переключателя.</callout>
+					<callout lang="ru"><emphasis>fCheck</emphasis> флаг включения переключателя.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Если fCheck равно true, то функция включает переключатель с идентификатором 
+					nRadioID из группы с идентификатором nGroupID, а все остальные переключатели из этой группы выключает. 
+					Если fCheck равно false, то функция выключает переключатель с идентификатором nRadioID из группы с идентификатором nGroupID. </para>
+			</section><section id="FUNC_VS_CREATE_CHECK_BOX">
+				<title lang="ru">VS_CreateCheckBox</title>
+				<para lang="ru">Создаёт выключатель.</para>
+				<programlisting>bool VS_CreateCheckBox(
+			char *szName, 
+			int nID, 
+			bool fCheck
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>szName</emphasis> имя выключателя.</callout>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор выключателя.</callout>
+					<callout lang="ru"><emphasis>fCheck</emphasis> начальное состояние выключателя. true - включен, false - выключен.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Выключатель - это элемент управления, который может находиться в одном 
+					из двух состояний - включено или выключено. Функция создаёт этот элемент управления с именем szName и идентификатором nID. 
+					После создания выключателя VShell устанавливает его в состояние fCheck. Созданный выключатель размещается в специальном окне 
+					для элементов управления. Если при создании выключателя указан идентификатор 
+					уже существующего выключателя, то новый элемент управления не будет создан и функция возвратит false.</para>
+			</section><section id="FUNC_VS_CREATE_EDIT">
+				<title lang="ru">VS_CreateEdit</title>
+				<para lang="ru">Создание поля ввода</para>
+				<programlisting>bool VS_CreateEdit(
+			char *szName, 
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>szName</emphasis> имя поля ввода</callout>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор поля ввода</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Поле ввода - это элемент управления, который позволяет ввести некоторое 
+					значение - текстовую строку, или число. После ввода данных необходимо нажать клавишу &lt;ENTER&gt;, показав, таким образом, 
+					что ввод значения закончен. Созданное поле ввода размещается в специальном окне 
+					для элементов управления. Если при создании поля ввода указан идентификатор 
+					уже существующего поля ввода, то новый элемент управления не будет создан и функция возвратит false.</para>
+			</section><section id="FUNC_VS_CREATE_RADIO_GROUP">
+				<title lang="ru">VS_CreateRadioGroup</title>
+				<para lang="ru">Создание группы переключателей (радио кнопки)</para>
+				<programlisting>bool VS_CreateRadioGroup(
+			char *szGroupName, 
+			int nGroupID, 
+			int nQuantity, 
+			char *szRadioName, 
+			int *pnRadioID, 
+			int nChecked
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>szGroupName</emphasis> имя группы переключателей</callout>
+					<callout lang="ru"><emphasis>nGroupID</emphasis> идентификатор группы переключателей</callout>
+					<callout lang="ru"><emphasis>nQuantity</emphasis> количество переключателей в группе</callout>
+					<callout lang="ru"><emphasis>szRadioName</emphasis> имена переключателей</callout>
+					<callout lang="ru"><emphasis>pnRadioID</emphasis> массив с идентификаторами переключателей</callout>
+					<callout lang="ru"><emphasis>nChecked</emphasis> порядковый номер (начиная с нуля) переключателя, который будет включён после создания группы переключателей.</callout>
+				</calloutlist>
+			 	<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Переключатели - это элемент управления, который находится в одном из двух состояний: 
+					включен и выключен. Причём, если эти элементы объеденены в группу, то при включении одного элемента группы 
+					автоматически выключаются все остальные элементы группы. Функция создаёт группу таких переключателей с именем 
+					szGroupName и идентификатором nGroupID. Количество переключателей в группе определяется параметром nQuantity. 
+					Каждому переключателю в группе нужно присвоить имя и уникальный в пределах группы идентификатор. Имена для всех 
+					переключателей передаются в одной строке szRadioName. Имена в строке задаются последовательно для каждого из 
+					переключателей и разделяются символом '&amp;'. Например, если в группе три переключателя, то строка szRadioName может 
+					выглядеть так: "Radio1&amp;Radio2&amp;Radio3", где "Radio1" - имя первого переключателя, "Radio2" - 
+					имя второго переключателя, а "Radio3" - имя третьего переключателя. В массиве pnRadioID последовательно 
+					задаются идентификаторы для каждого из переключателей. После создания группы переключателей VShell включит переключатель 
+					с порядковым номером (начиная с нуля)  nChecked. Если nChecked больше или равно nQuantity, то все переключатели будут выключены. 
+					Созданная группа переключателей размещается в специальном окне для элементов управления. Если при создании группы 
+					переключателей указан идентификатор уже существующей группы, 
+					то новая группа не будет создана и функция возвратит false.</para>
+			</section>		
+			<section id="FUNC_VS_CREATE_SLIDER">
+				<title lang="ru">VS_CreateSlider</title>
+				<para lang="ru">Создание элемента управления "Слайдер"</para>
+				<programlisting>bool VS_CreateSlider(
+			char *szName, 
+			int nID, 
+			float fltMin, 
+			float fltMax, 
+			float fltStep, 
+			float fltStartPos
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>szName</emphasis> имя слайдера.</callout>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор слайдера.</callout>
+					<callout lang="ru"><emphasis>fltMin</emphasis> минимальное значение рабочего диапазона слайдера. </callout>
+					<callout lang="ru"><emphasis>fltMax</emphasis> максимальное значение рабочего диапазона слайдера.</callout>
+					<callout lang="ru"><emphasis>fltStep</emphasis> шаг бегунка сдайдера</callout>
+					<callout lang="ru"><emphasis>fltStartPos</emphasis> начальная позиция</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Слайдер - это элемент управления с бегунком, с помощью 
+					которого можно выбрать значения от <emphasis>fltMin</emphasis> до <emphasis>fltMax</emphasis> включительно с шагом 
+					<emphasis>fltStep</emphasis>. После создания бегунок слайдера устанавливается в начальную позицию fltStartPos. 
+					Если  начальная позиция меньше fltMin, то слайдер устанавливается в позицию fltMin. Если  начальная позиция больше 
+					<emphasis>fltMax</emphasis>, то слайдер устанавливается в позицию <emphasis>fltMax</emphasis>. 
+					Созданный слайдер размещается в специальном окне для элементов управления. Если при создании слайдера указан 
+					идентификатор уже существующего слайдера, то новый слайдер не будет создан и функция возвратит false.</para>
+			</section><section id="FUNC_VS_GET_CHECK_BOX">
+				<title lang="ru">VS_GetCheckBox</title>
+				<para lang="ru">Получение состояния выключателя</para>
+				<programlisting>bool VS_GetCheckBox(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор выключателя</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> Если выключатель включен, то функция возвращает true, если выключен, 
+					то функция возвращает false.</para>						
+			</section><section id="FUNC_VS_GET_CHECKED_D">
+				<title lang="ru">VS_GetCheckedID</title>
+				<para lang="ru">Получение идентификатора включенного переключателя</para>
+				<programlisting>int VS_GetCheckedID(
+			int nGroupID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nGroupID</emphasis> идентификатор группы радио кнопок.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> возвращает идентификатор включенного на момент вызова 
+					функции переключателя из группы с идентификатором nGroupID. Если все переключатели выключены, то функция возвращает 0.</para>						
+			</section><section id="FUNC_VS_GET_EDIT_FLOAT">
+				<title lang="ru">VS_GetEditFloat</title>
+				<para lang="ru">Получение числа с плавающей точкой из поля ввода</para>
+				<programlisting>float VS_GetEditFloat(
+			int nID, 
+			bool *pfError
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор поля ввода</callout>
+					<callout lang="ru"><emphasis>pfError</emphasis> флаг ошибки</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Если из поля ввода не возможно получить число с плавающей точкой, то флаг ошибки будет равен true. 
+					Если не требуется анализировать ошибку, то вместо параметра pfError можно передать NULL.</para>
+			</section><section id="FUNC_VS_GET_EDIT_INT">
+				<title lang="ru">VS_GetEditInt</title>
+				<para lang="ru">Получение целочисленного значения из поля ввода</para>
+				<programlisting>int VS_GetEditInt(
+			int nID, 
+			bool *pfError
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор поля ввода</callout>
+					<callout lang="ru"><emphasis>pfError</emphasis> флаг ошибки.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Если из поля ввода не возможно получить целочисленное значение, то флаг ошибки будет равен true. 
+					Если не требуется анализировать ошибку, то вместо параметра pfError можно передать NULL.</para>
+			</section><section id="FUNC_VS_GET_EDIT_TEXT">
+				<title lang="ru">VS_GetEditText</title>
+				<para lang="ru">Получение текстовой строки из поля ввода</para>
+				<programlisting>bool VS_GetEditText(
+			int nID, 
+			PSTR szText
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор поля ввода</callout>
+					<callout lang="ru"><emphasis>szText</emphasis> буфер для считываемой строки</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+			</section><section id="FUNC_VS_GET_SLIDER">
+				<title lang="ru">VS_GetSlider</title>
+				<para lang="ru">Получение текущей позиции слайдера</para>
+				<programlisting>float VS_GetSlider(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор слайдера.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> позиция слайдера.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция возвращает текущую позицию слайдера с идентификатором nID.</para>
+			</section><section id="FUNC_VS_IS_RADIO_CHECKED">
+			 	<title lang="ru">VS_IsRadioChecked</title>
+				<para lang="ru">Получение состояния переключателя</para>
+				<programlisting>bool VS_IsRadioChecked(
+			int nGroupID, 
+			int nRadioID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nGroupID</emphasis> идентификатор группы переключателей.</callout>
+					<callout lang="ru"><emphasis>nRadioID</emphasis> идентификатор переключателя.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> функция возвращает true, если включен переключатель с 
+					идентификатором nRadioID из группы с идентификатором nGroupID. Если переключатель выключен, то функция возвращает false.</para>						
+			</section>
+			
+			<section id="FUNC_VS_IS_SLIDER_CHANGED">
+				<title lang="ru">VS_IsSliderChanged</title>
+				<para lang="ru">Флаг изменения позиции слайдера</para>
+				<programlisting>bool VS_IsSliderChanged(
+			int nID
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор слайдера.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> Если позиция слайдера изменилась после последнего 
+					вызова <link linkend="FUNC_VS_GET_SLIDER">VS_GetSlider()</link>, то функция возвращает true, 
+					если позиция не изменилась, то функция возвращает false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция возвращает флаг изменения позиции слайдера с идентификатором nID.</para>
+			</section>
+			
+			
+			
+			
+			
+			
+			<section id="FUNC_VS_SET_CHECK_BOX">
+				<title lang="ru">VS_SetCheckBox</title>
+				<para lang="ru">Установка состояния выключателя</para>
+				<programlisting>bool VS_SetCheckBox(
+			int nID, 
+			bool fCheck
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор выключателя</callout>
+					<callout lang="ru"><emphasis>fCheck</emphasis> новое состояние выключателя true - включен, false - выключен.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+			</section>
+			
+			
+			<section id="FUNC_VS_SET_EDIT_FLOAT">
+				<title lang="ru">VS_SetEditFloat</title>
+				<para lang="ru">Установка числа с плавающей точкой в поле ввода </para>
+				<programlisting>bool VS_SetEditFloat(
+			int nID, 
+			float fltVal
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор поля ввода</callout>
+					<callout lang="ru"><emphasis>fltVal</emphasis> устанавливаемое значения</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+			</section>
+			<section id="FUNC_VS_SET_EDIT_INT">
+				<title lang="ru">VS_SetEditInt</title>
+				<para lang="ru">Установка целого значения в поле ввода</para>
+				<programlisting>bool VS_SetEditInt(
+			int nID, 
+			int nVal
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор поля ввода</callout>
+					<callout lang="ru"><emphasis>nVal</emphasis> устанавливаемое значение</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+			</section><section id="FUNC_VS_SET_EDIT_TEXT">
+				<title lang="ru">VS_SetEditText</title>
+				<para lang="ru">Установка текстовой строки  в поле ввода</para>
+				<programlisting>bool VS_SetEditText(
+			int nID, 
+			char *szText
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор поля ввода.</callout>
+					<callout lang="ru"><emphasis>szText</emphasis> устанавливаемая строка.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+			</section>
+			
+			
+			
+			
+		<section id="FUNC_VS_SET_SLIDER">
+			  	<title lang="ru">VS_SetSlider</title>
+				<para lang="ru">Установка новой позиции слайдера</para>
+				<programlisting>bool VS_SetSlider(
+			int nID, 
+			float fltVal
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltVal</emphasis> новое значение позиции слайдера.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция устанавливает слайдер с идентификатором nID в позицию 
+					<emphasis>fltVal</emphasis>.  Если  <emphasis>fltVal</emphasis> меньше минимального зачения рабочего диапазона 
+					слайдера, то слайдер устанавливается в минимальную позицию диапазона. Если   <emphasis>fltVal</emphasis> больше 
+					максимального зачения рабочего диапазона слайдера, то слайдер устанавливается в максимальную позицию диапазона.</para>
+			</section></section>
+		<section>
+			<title lang="ru">Функции векторной графики</title>
+			<section id="FUNC_VS_ARC">
+				<title lang="ru">VS_Arc</title>
+				<para lang="ru">Отрисовка дуги</para>
+				<programlisting>bool VS_Arc(
+			int nID, 
+			int nLeftRect, 
+			int nTopRect, 
+			int nRightRect, 
+			int nBottomRect, 
+			int nXStartArc, 
+			int nYStartArc, 
+			int nXEndArc, 
+			int nYEndArc, 
+			unsigned int unColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга. </callout>
+					<callout lang="ru"><emphasis>nTopRec</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>nRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>nBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>nXStartArc</emphasis> X координата точки на начальном радиусе дуги.</callout>
+				  	<callout lang="ru"><emphasis>nYStartArc</emphasis> Y координата точки на начальном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>nXEndArc</emphasis> X координата точки на конечном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>nYEndArc</emphasis> Y координата точки на конечном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет дуги.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Дуга является частью линии, ограничивающей эллипс. При вызове функции 
+					необходимо задать эллипс и указать ту его часть, которая должна содержаться в нарисованной дуге. Для задания эллипса 
+					необходимо указать координаты прямоугольника, который описывается около эллипса с помощью параметров nLeftRect, nTopRect, 
+					nRightRect и nBottomRect. Функция рисует дугу от той точки, где начальный радиус пересекается с эллипсом, до точки его пересечения 
+					с конечным радиусом в направлении против часовой стрелки. Начальный радиус - это прямая, проходящая через центр эллипса и 
+					точку с координатами [nXStartArc, nYStartArc]. Конечный радиус - это прямая, проходящая через центр эллипса и точку 
+					с координатами [nXEndArc, nYEndArc]. Цвет дуги задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>.</para>
+			</section><section id="FUNC_VS_ARC_EX">
+				<title lang="ru">VS_ArcEx</title>
+				<para lang="ru">Отрисовка дуги с возможностью установки стиля пера</para>
+				<programlisting>bool VS_ArcEx(
+			int nID, 
+			int nLeftRect, 
+			int nTopRect, 
+			int nRightRect, 
+			int nBottomRect, 
+			int nXStartArc, 
+			int nYStartArc, 
+			int nXEndArc, 
+			int nYEndArc, 
+			unsigned int unColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга. </callout>
+					<callout lang="ru"><emphasis>nTopRec</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>nRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>nBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>nXStartArc</emphasis> X координата точки на начальном радиусе дуги.</callout>
+				  	<callout lang="ru"><emphasis>nYStartArc</emphasis> Y координата точки на начальном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>nXEndArc</emphasis> X координата точки на конечном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>nYEndArc</emphasis> Y координата точки на конечном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет дуги.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки линий.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Дуга является частью линии, ограничивающей эллипс. При вызове функции 
+					необходимо задать эллипс и указать ту его часть, которая должна содержаться в нарисованной дуге. Для задания эллипса 
+					необходимо указать координаты прямоугольника, который описывается около эллипса с помощью параметров nLeftRect, nTopRect, 
+					nRightRect и nBottomRect. Функция рисует дугу от той точки, где начальный радиус пересекается с эллипсом, до точки его пересечения 
+					с конечным радиусом в направлении против часовой стрелки. Начальный радиус - это прямая, проходящая через центр эллипса и 
+					точку с координатами [nXStartArc, nYStartArc]. Конечный радиус - это прямая, проходящая через центр эллипса и точку 
+					с координатами [nXEndArc, nYEndArc]. Цвет дуги задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>.</para>
+			</section><section id="FUNC_VS_ARC_F">
+				<title lang="ru">VS_ArcF</title>
+				<para lang="ru">Отрисовка дуги</para>
+				<programlisting>bool VS_ArcF(
+			int nID, 
+			float fltLeftRect, 
+			float fltTopRect, 
+			float fltRightRect, 
+			float fltBottomRect, 
+			float fltXStartArc, 
+			float fltYStartArc, 
+			float fltXEndArc, 
+			float fltYEndArc, 
+			unsigned int unColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>fltTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>fltRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>fltBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>fltXStartArc</emphasis> X координата точки на начальном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>fltYStartArc</emphasis> Y координата точки на начальном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>fltXEndArc</emphasis> X координата точки на конечном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>fltYEndArc</emphasis> Y координата точки на конечном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет дуги.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_ARC">VS_Arc()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_ARC_F_EX">
+				<title lang="ru">VS_ArcFEx</title>
+				<para lang="ru">Отрисовка дуги с возможностью установки стиля пера</para>
+				<programlisting>bool VS_ArcFEx(
+			int nID, 
+			float fltLeftRect, 
+			float fltTopRect, 
+			float fltRightRect, 
+			float fltBottomRect, 
+			float fltXStartArc, 
+			float fltYStartArc, 
+			float fltXEndArc, 
+			float fltYEndArc, 
+			unsigned int unColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>fltTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>fltRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>fltBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит дуга.</callout>
+					<callout lang="ru"><emphasis>fltXStartArc</emphasis> X координата точки на начальном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>fltYStartArc</emphasis> Y координата точки на начальном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>fltXEndArc</emphasis> X координата точки на конечном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>fltYEndArc</emphasis> Y координата точки на конечном радиусе дуги.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет дуги.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки линий.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_ARC_EX">VS_ArcEx()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_CHORD">
+				<title lang="ru">VS_Chord</title>
+				<para lang="ru">Отрисовка сегмента</para>
+				<programlisting>bool VS_Chord(
+			int nID, 
+			int nLeftRect, 
+			int nTopRect, 
+			int nRightRect, 
+			int nBottomRect, 
+			int nXRadial1, 
+			int nYRadial1, 
+			int nXRadial2, 
+			int nYRadial2, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент. </callout>
+					<callout lang="ru"><emphasis>nTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>nRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>nBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>nXRadial1</emphasis> X координата точки на начальном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>nYRadial1</emphasis> Y координата точки на начальном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>nXRadial2</emphasis> X координата точки на конечном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>nYRadial2</emphasis> Y координата точки на конечном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура сегмента.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя сегмента.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Сегмент является фигурой, образованной при пересечении эллипса с прямой (хорда). При вызове функции 
+					необходимо задать эллипс и указать ту его часть, которая должна содержаться в сегменте. Для задания эллипса 
+					необходимо указать координаты прямоугольника, который описывается около эллипса с помощью параметров nLeftRect, nTopRect, 
+					nRightRect и nBottomRect. Хорда  - это прямая, пересекающая две точки. Первая точка хорды - точка пересечения начального 
+					радиуса с эллипсом. Вторая точка хорды - точка пересечения конечного радиуса с эллипсом. Начальный радиус - это прямая, 
+					проходящая через центр эллипса и 
+					точку с координатами [nXRadial1, nYRadial1]. Конечный радиус - это прямая, проходящая через центр эллипса и точку 
+					с координатами [nXRadial2, nYRadial2]. Функция рисует сегмент от первой точки хорды до второй по направлению против часовой стрелки. 
+					Цвет контура и цвет заполнения  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>. Если в параметре unFillColor установлено значение 
+					<link linkend="GR_ID_NULL_COLOR">VS_NULL_COLOR</link>, то будет нарисован только контур сегмента, без заполнения его внутренней части.</para>
+			</section><section id="FUNC_VS_CHORD_EX">
+				<title lang="ru">VS_ChordEx</title>
+				<para lang="ru">Отрисовка сегмента с возможностью установки стиля пера</para>
+				<programlisting>bool VS_ChordEx(
+			int nID, 
+			int nLeftRect, 
+			int nTopRect, 
+			int nRightRect, 
+			int nBottomRect, 
+			int nXRadial1, 
+			int nYRadial1, 
+			int nXRadial2, 
+			int nYRadial2, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент. </callout>
+					<callout lang="ru"><emphasis>nTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>nRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>nBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>nXRadial1</emphasis> X координата точки на начальном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>nYRadial1</emphasis> Y координата точки на начальном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>nXRadial2</emphasis> X координата точки на конечном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>nYRadial2</emphasis> Y координата точки на конечном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура сегмента.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя сегмента.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки контура.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Сегмент является фигурой, образованной при пересечении эллипса с прямой (хорда). При вызове функции 
+					необходимо задать эллипс и указать ту его часть, которая должна содержаться в сегменте. Для задания эллипса 
+					необходимо указать координаты прямоугольника, который описывается около эллипса с помощью параметров nLeftRect, nTopRect, 
+					nRightRect и nBottomRect. Хорда  - это прямая, пересекающая две точки. Первая точка хорды - точка пересечения начального 
+					радиуса с эллипсом. Вторая точка хорды - точка пересечения конечного радиуса с эллипсом. Начальный радиус - это прямая, 
+					проходящая через центр эллипса и 
+					точку с координатами [nXRadial1, nYRadial1]. Конечный радиус - это прямая, проходящая через центр эллипса и точку 
+					с координатами [nXRadial2, nYRadial2]. Функция рисует сегмент от первой точки хорды до второй по направлению против часовой стрелки. 
+					Цвет контура и цвет заполнения  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>. Если в параметре unFillColor установлено значение 
+					<link linkend="GR_ID_NULL_COLOR">VS_NULL_COLOR</link>, то будет нарисован только контур сегмента, без заполнения его внутренней части.</para>
+			</section><section id="FUNC_VS_CHORD_F">
+				<title lang="ru">VS_ChordF</title>
+				<para lang="ru">Отрисовка сегмента</para>
+				<programlisting>bool VS_ChordF(
+			int nID, 
+			float fltLeftRect, 
+			float fltTopRect, 
+			float fltRightRect, 
+			float fltBottomRect, 
+			float fltXRadial1, 
+			float fltYRadial1, 
+			float fltXRadial2, 
+			float fltYRadial2, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент. </callout>
+					<callout lang="ru"><emphasis>fltTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>fltRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>fltBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>fltXRadial1</emphasis> X координата точки на начальном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>fltYRadial1</emphasis> Y координата точки на начальном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>fltXRadial2</emphasis> X координата точки на конечном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>fltYRadial2</emphasis> Y координата точки на конечном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура сегмента.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя сегмента.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_CHORD">VS_Chord()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_CHORD_F_EX">
+				<title lang="ru">VS_ChordFEx</title>
+				<para lang="ru">Отрисовка сегмента с возможностью установки стиля пера</para>
+				<programlisting>bool VS_ChordFEx(
+			int nID, 
+			float fltLeftRect, 
+			float fltTopRect, 
+			float fltRightRect, 
+			float fltBottomRect, 
+			float fltXRadial1, 
+			float fltYRadial1, 
+			float fltXRadial2, 
+			float fltYRadial2, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент. </callout>
+					<callout lang="ru"><emphasis>fltTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>fltRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>fltBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сегмент.</callout>
+					<callout lang="ru"><emphasis>fltXRadial1</emphasis> X координата точки на начальном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>fltYRadial1</emphasis> Y координата точки на начальном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>fltXRadial2</emphasis> X координата точки на конечном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>fltYRadial2</emphasis> Y координата точки на конечном радиусе сегмента.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура сегмента.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя сегмента.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки контура.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_CHORD_EX">VS_ChordEx()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_ELLIPSE">
+				<title lang="ru">VS_Ellipse</title>
+				<para lang="ru">Отрисовка эллипса</para>
+				<programlisting>bool VS_Ellipse(
+			int nID, 
+			int nLeftRect, 
+			int nTopRect, 
+			int nRightRect, 
+			int nBottomRect, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>nTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>nRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>nBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура эллипса.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя эллипса.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция отрисовывает эллипс, который вписан в прямоугольник, заданный координатами 
+					nLeftRect, nTopRect, nRightRect, nBottomRect. Цвет контура и цвет заполнения  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>. Если в параметре unFillColor установлено значение 
+					<link linkend="GR_ID_NULL_COLOR">VS_NULL_COLOR</link>, то будет нарисован только контур эллипса, 
+					без заполнения его внутренней части.</para>
+			</section><section id="FUNC_VS_ELLIPSE_EX">
+				<title lang="ru">VS_EllipseEx</title>
+				<para lang="ru">Отрисовка эллипса с возможностью установки стиля пера</para>
+				<programlisting>bool VS_EllipseEx(
+			int nID, 
+			int nLeftRect, 
+			int nTopRect, 
+			int nRightRect, 
+			int nBottomRect, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>nTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>nRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>nBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура эллипса.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя эллипса.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки контура.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция отрисовывает эллипс, который вписан в прямоугольник, заданный координатами 
+					nLeftRect, nTopRect, nRightRect, nBottomRect. Цвет контура и цвет заполнения  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>. Если в параметре unFillColor установлено значение 
+					<link linkend="GR_ID_NULL_COLOR">VS_NULL_COLOR</link>, то будет нарисован только контур эллипса, 
+					без заполнения его внутренней части.</para>
+			</section><section id="FUNC_VS_ELLIPSE_F">
+				<title lang="ru">VS_EllipseF</title>
+				<para lang="ru">Отрисовка эллипса</para>
+				<programlisting>bool VS_EllipseF(
+			int nID, 
+			float fltLeftRect, 
+			float fltTopRect, 
+			float fltRightRect, 
+			float fltBottomRect, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>fltTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>fltRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>fltBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура эллипса.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя эллипса.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_ELLIPSE">VS_Ellipse()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_ELLIPSE_F_EX">
+				<title lang="ru">VS_EllipseFEx</title>
+				<para lang="ru">Отрисовка эллипса с возможностью установки стиля пера</para>
+				<programlisting>bool VS_EllipseFEx(
+			int nID, 
+			float fltLeftRect, 
+			float fltTopRect, 
+			float fltRightRect, 
+			float fltBottomRect, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>fltTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>fltRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>fltBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура эллипса.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя эллипса.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки контура.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_ELLIPSE_EX">VS_EllipseEx()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_LINE">
+				<title lang="ru">VS_Line</title>
+				<para lang="ru">Отрисовка линии</para>
+				<programlisting>bool VS_Line(
+			int nID, 
+			int nX1, 
+			int nY1, 
+			int nX2, 
+			int nY2, 
+			unsigned int unColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nX1</emphasis> X координата начала линии.</callout>
+					<callout lang="ru"><emphasis>nY1</emphasis> Y координата начала линии.</callout>
+					<callout lang="ru"><emphasis>nX2</emphasis> X координата конца линии.</callout>
+					<callout lang="ru"><emphasis>nY2</emphasis> Y координата конца линии.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет линии.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция отрисовывает линию на изображении от точки с координатами [nX1, nY1] 
+					до точки с координатами[nX2, nY2] цветом, заданным в параметре unColor. Цвет линии задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>.</para>
+			</section><section id="FUNC_VS_LINE_EX">
+				<title lang="ru">VS_LineEx</title>
+				<para lang="ru">Отрисовка линии с возможностью установки стиля пера</para>
+				<programlisting>bool VS_LineEx(
+			int nID, 
+			int nX1, 
+			int nY1, 
+			int nX2, 
+			int nY2, 
+			unsigned int unColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nX1</emphasis> X координата начала линии.</callout>
+					<callout lang="ru"><emphasis>nY1</emphasis> Y координата начала линии.</callout>
+					<callout lang="ru"><emphasis>nX2</emphasis> X координата конца линии.</callout>
+					<callout lang="ru"><emphasis>nY2</emphasis> Y координата конца линии.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет линии.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки линий.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция отрисовывает линию на изображении от точки с координатами [nX1, nY1] 
+					до точки с координатами[nX2, nY2] цветом, заданным в параметре unColor. Цвет линии задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>.</para>
+			</section><section id="FUNC_VS_LINE_F">
+				<title lang="ru">VS_LineF</title>
+				<para lang="ru">Отрисовка линии</para>
+				<programlisting>bool VS_LineF(
+			int nID, 
+			float fltX1, 
+			float fltY1, 
+			float fltX2, 
+			float fltY2, 
+			unsigned int unColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltX1</emphasis> X координата начала линии.</callout>
+					<callout lang="ru"><emphasis>fltY1</emphasis> Y координата начала линии.</callout>
+					<callout lang="ru"><emphasis>fltX2</emphasis> X координата конца линии.</callout>
+					<callout lang="ru"><emphasis>fltY2</emphasis> Y координата конца линии.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет линии.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_LINE">VS_Line()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_LINE_F_EX">
+				<title lang="ru">VS_LineFEx</title>
+				<para lang="ru">Отрисовка линии с возможностью установки стиля пера</para>
+				<programlisting>bool VS_LineFEx(
+			int nID, 
+			float fltX1, 
+			float fltY1, 
+			float fltX2, 
+			float fltY2, 
+			unsigned int unColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltX1</emphasis> X координата начала линии.</callout>
+					<callout lang="ru"><emphasis>fltY1</emphasis> Y координата начала линии.</callout>
+					<callout lang="ru"><emphasis>fltX2</emphasis> X координата конца линии.</callout>
+					<callout lang="ru"><emphasis>fltY2</emphasis> Y координата конца линии.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет линии.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки линий.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_LINE_EX">VS_LineEx()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_PIE">
+				<title lang="ru">VS_Pie</title>
+				<para lang="ru">Отрисовка сектора</para>
+				<programlisting>bool VS_Pie(
+			int nID, 
+			int nLeftRect, 
+			int nTopRect, 
+			int nRightRect, 
+			int nBottomRect, 
+			int nXRadial1, 
+			int nYRadial1, 
+			int nXRadial2, 
+			int nYRadial2, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>nTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>nRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>nBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>nXRadial1</emphasis> X координата точки на начальном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>nYRadial1</emphasis> Y координата точки на начальном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>nXRadial2</emphasis> X координата точки на конечном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>nYRadial2</emphasis> Y координата точки на конечном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура сектора.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя сектора.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Сектор является фигурой, образованной при пересечении эллипса с начальным и конечным радиусом. При вызове функции 
+					необходимо задать эллипс и указать ту его часть, которая должна содержаться в секторе. Для задания эллипса 
+					необходимо указать координаты прямоугольника, который описывается около эллипса с помощью параметров nLeftRect, nTopRect, 
+					nRightRect и nBottomRect. Функция рисует сектор от той точки, где начальный радиус пересекается с эллипсом, до точки его пересечения 
+					с конечным радиусом в направлении против часовой стрелки. Начальный радиус - это прямая, проходящая через центр эллипса и 
+					точку с координатами [nXRadial1, nYRadial1]. Конечный радиус - это прямая, проходящая через центр эллипса и точку 
+					с координатами [nXRadial2, nYRadial2]. Цвет контура и цвет заполнения  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>. Если в параметре unFillColor установлено значение 
+					<link linkend="GR_ID_NULL_COLOR">VS_NULL_COLOR</link>, то будет нарисован только контур сектора, без заполнения его внутренней части.</para>
+			</section><section id="FUNC_VS_PIE_EX">
+				<title lang="ru">VS_PieEx</title>
+				<para lang="ru">Отрисовка сектора с возможностью установки стиля пера</para>
+				<programlisting>bool VS_PieEx(
+			int nID, 
+			int nLeftRect, 
+			int nTopRect, 
+			int nRightRect, 
+			int nBottomRect, 
+			int nXRadial1, 
+			int nYRadial1, 
+			int nXRadial2, 
+			int nYRadial2, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>nTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>nRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>nBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>nXRadial1</emphasis> X координата точки на начальном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>nYRadial1</emphasis> Y координата точки на начальном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>nXRadial2</emphasis> X координата точки на конечном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>nYRadial2</emphasis> Y координата точки на конечном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура сектора.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя сектора.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки контура.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Сектор является фигурой, образованной при пересечении эллипса с начальным и конечным радиусом. При вызове функции 
+					необходимо задать эллипс и указать ту его часть, которая должна содержаться в секторе. Для задания эллипса 
+					необходимо указать координаты прямоугольника, который описывается около эллипса с помощью параметров nLeftRect, nTopRect, 
+					nRightRect и nBottomRect. Функция рисует сектор от той точки, где начальный радиус пересекается с эллипсом, до точки его пересечения 
+					с конечным радиусом в направлении против часовой стрелки. Начальный радиус - это прямая, проходящая через центр эллипса и 
+					точку с координатами [nXRadial1, nYRadial1]. Конечный радиус - это прямая, проходящая через центр эллипса и точку 
+					с координатами [nXRadial2, nYRadial2]. Цвет контура и цвет заполнения  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>. Если в параметре unFillColor установлено значение 
+					<link linkend="GR_ID_NULL_COLOR">VS_NULL_COLOR</link>, то будет нарисован только контур сектора, без заполнения его внутренней части.</para>
+			</section><section id="FUNC_VS_PIE_F">
+				<title lang="ru">VS_PieF</title>
+				<para lang="ru">Отрисовка сектора</para>
+				<programlisting>bool VS_PieF(
+			int nID, 
+			float fltLeftRect, 
+			float fltTopRect, 
+			float fltRightRect, 
+			float fltBottomRect, 
+			float fltXRadial1, 
+			float fltYRadial1, 
+			float fltXRadial2, 
+			float fltYRadial2, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>fltTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>fltRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>fltBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>fltXRadial1</emphasis> X координата точки на начальном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>fltYRadial1</emphasis> Y координата точки на начальном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>fltXRadial2</emphasis> X координата точки на конечном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>fltYRadial2</emphasis> Y координата точки на конечном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура сектора.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя сектора.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_PIE">VS_Pie()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_PIE_F_EX">
+				<title lang="ru">VS_PieFEx</title>
+				<para lang="ru">Отрисовка сектора с возможностью установки стиля пера</para>
+				<programlisting>bool VS_PieFEx(
+			int nID, 
+			float fltLeftRect, 
+			float fltTopRect, 
+			float fltRightRect, 
+			float fltBottomRect, 
+			float fltXRadial1, 
+			float fltYRadial1, 
+			float fltXRadial2, 
+			float fltYRadial2, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltLeftRect</emphasis> X координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>fltTopRect</emphasis> Y координата левого верхнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>fltRightRect</emphasis> X координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>fltBottomRect</emphasis> Y координата правого нижнего угла прямоугольника, 
+						описанного около эллипса, на котором лежит сектор.</callout>
+					<callout lang="ru"><emphasis>fltXRadial1</emphasis> X координата точки на начальном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>fltYRadial1</emphasis> Y координата точки на начальном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>fltXRadial2</emphasis> X координата точки на конечном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>fltYRadial2</emphasis> Y координата точки на конечном радиусе сектора.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура сектора.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя сектора.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки контура.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_PIE_EX">VS_PieEx()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_POLYBEZIER">
+				<title lang="ru">VS_PolyBezier</title>
+				<para lang="ru">Отрисовка кривой Безье</para>
+				<programlisting>bool VS_PolyBezier(
+			int nID, 
+			S_VS_Point *pPoints, 
+			int nPoints, 
+			unsigned int unColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis> массив точек.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество точек.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет кривой Безье.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция отрисовывает кривую Безье по точкам, заданным в параметре pPoints. 
+					Для рисования кривой Безье в массиве точек должно содержаться, по крайней мере, координаты четырёх точек: первая является 
+					начальной точкой кривой, вторая и третья - контрольными точками, определяющими её форму, а четвёртая - конечной точкой. 
+					Чтобы нарисовать две соединяющиеся между собой кривой Безье нужно добавить к массиву точек только три точки. Начальная 
+					точка второй, дополнительной кривой, будет совпадать с конечной точкой первой кривой. Первая и вторая дополнительные 
+					точки будут контрольными точками второй кривой, а третья станет её конечной точкой. Цвет кривой задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>.</para>
+			</section><section id="FUNC_VS_POLYBEZIER_EX">
+				<title lang="ru">VS_PolyBezierEx</title>
+				<para lang="ru">Отрисовка кривой Безье с возможностью установки стиля пера</para>
+				<programlisting>bool VS_PolyBezierEx(
+			int nID, 
+			S_VS_Point *pPoints, 
+			int nPoints, 
+			unsigned int unColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis> массив точек.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество точек.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет кривой Безье.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки линий.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция отрисовывает кривую Безье по точкам, заданным в параметре pPoints. 
+					Для рисования кривой Безье в массиве точек должно содержаться, по крайней мере, координаты четырёх точек: первая является 
+					начальной точкой кривой, вторая и третья - контрольными точками, определяющими её форму, а четвёртая - конечной точкой. 
+					Чтобы нарисовать две соединяющиеся между собой кривой Безье нужно добавить к массиву точек только три точки. Начальная 
+					точка второй, дополнительной кривой, будет совпадать с конечной точкой первой кривой. Первая и вторая дополнительные 
+					точки будут контрольными точками второй кривой, а третья станет её конечной точкой. Цвет кривой задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>.</para>
+			</section><section id="FUNC_VS_POLYBEZIER_F">
+				<title lang="ru">VS_PolyBezierF</title>
+				<para lang="ru">Отрисовка кривой Безье</para>
+				<programlisting>bool VS_PolyBezierF(
+			int nID, 
+			S_VS_PointF *pPoints, 
+			int nPoints, 
+			unsigned int unColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis> массив точек.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество точек.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет кривой Безье.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_POLYBEZIER">VS_PolyBezier()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_POLYBEZIER_F_EX">
+				<title lang="ru">VS_PolyBezierFEx</title>
+				<para lang="ru">Отрисовка кривой Безье с возможностью установки стиля пера</para>
+				<programlisting>bool VS_PolyBezierFEx(
+			int nID, 
+			S_VS_PointF *pPoints, 
+			int nPoints, 
+			unsigned int unColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis> массив точек.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество точек.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет кривой Безье.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки линий.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_POLYBEZIER_EX">VS_PolyBezierEx()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_POLYGON">
+				<title lang="ru">VS_Polygon</title>
+				<para lang="ru">Отрисовка полигона</para>
+				<programlisting>bool VS_Polygon(
+			int nID, 
+			S_VS_Point *pPoints, 
+			int nPoints, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis> точки (вершины) полигона.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество вершин  полигона.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура полигона.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя полигона.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Полигон образуется из точек, заданных в параметре pPoints, которые являются 
+					вершинами полигона. Все вершины полигона последовательно соединяются линиями, причём последняя вершина соединяется с первой, 
+					образуя, таким  образом, замкнутую фигуру. Внутреннее пространство полигона закрашивается цветом заполнителя. 
+					Цвет контура и цвет заполнения  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>. Если в параметре unFillColor установлено значение 
+					<link linkend="GR_ID_NULL_COLOR">VS_NULL_COLOR</link>, то будет нарисован только контур полигона, 
+					без заполнения его внутренней части.</para>
+			</section><section id="FUNC_VS_POLYGON_EX">
+				<title lang="ru">VS_PolygonEx</title>
+				<para lang="ru">Отрисовка полигона с возможностью установки стиля пера</para>
+				<programlisting>bool VS_PolygonEx(
+			int nID, 
+			S_VS_Point *pPoints, 
+			int nPoints, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis> точки (вершины) полигона.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество вершин  полигона.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура полигона.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя полигона.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки контура.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Полигон образуется из точек, заданных в параметре pPoints, которые являются 
+					вершинами полигона. Все вершины полигона последовательно соединяются линиями, причём последняя вершина соединяется с первой, 
+					образуя, таким  образом, замкнутую фигуру. Внутреннее пространство полигона закрашивается цветом заполнителя. 
+					Цвет контура и цвет заполнения  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>. Если в параметре unFillColor установлено значение 
+					<link linkend="GR_ID_NULL_COLOR">VS_NULL_COLOR</link>, то будет нарисован только контур полигона, 
+					без заполнения его внутренней части.</para>
+			</section><section id="FUNC_VS_POLYGON_F">
+				<title lang="ru">VS_PolygonF</title>
+				<para lang="ru">Отрисовка полигона</para>
+				<programlisting>bool VS_PolygonF(
+			int nID, 
+			S_VS_PointF *pPoints, 
+			int nPoints, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis> точки (вершины) полигона.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество вершин  полигона.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура полигона.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя полигона.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_POLYGON">VS_Polygon()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_POLYGON_F_EX">
+				<title lang="ru">VS_PolygonFEx</title>
+				<para lang="ru">Отрисовка полигона с возможностью установки стиля пера</para>
+				<programlisting>bool VS_PolygonFEx(
+			int nID, 
+			S_VS_PointF *pPoints, 
+			int nPoints, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis> точки (вершины) полигона.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество вершин  полигона.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура полигона.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнителя полигона.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки контура.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_POLYGON_EX">VS_PolygonEx()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_POLYLINE">
+				<title lang="ru">VS_Polyline</title>
+				<para lang="ru">Отрисовка ломаной кривой</para>
+				<programlisting>bool VS_Polyline(
+			int nID, 
+			S_VS_Point *pPoints, 
+			int nPoints, 
+			unsigned int unColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis> массив точек.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество точек.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет ломаной кривой.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция отрисовывает ломаную кривую по точкам, заданным в параметре pPoints. Все точки заданного массива точек последовательно соединяются между собой линиями цветом, заданным параметром unColor. Цвет задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>.</para>
+			</section><section id="FUNC_VS_POLYLINE_EX">
+				<title lang="ru">VS_PolylineEx</title>
+				<para lang="ru">Отрисовка ломаной кривой с возможностью установки стиля пера</para>
+				<programlisting>bool VS_PolylineEx(
+			int nID, 
+			S_VS_Point *pPoints, 
+			int nPoints, 
+			unsigned int unColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis> массив точек.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество точек.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет ломаной кривой.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки линий.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция отрисовывает ломаную кривую по точкам, заданным в параметре pPoints. Все точки заданного массива точек последовательно соединяются между собой линиями цветом, заданным параметром unColor. Цвет задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>.</para>
+			</section><section id="FUNC_VS_POLYLINE_F">
+				<title lang="ru">VS_PolylineF</title>
+				<para lang="ru">Отрисовка ломаной кривой</para>
+				<programlisting>bool VS_PolylineF(
+			int nID, 
+			S_VS_PointF *pPoints, 
+			int nPoints, 
+			unsigned int unColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis>  массив точек.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество точек.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет ломаной кривой.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_POLYLINE">VS_Polyline()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_POLYLINE_F_EX">
+				<title lang="ru">VS_PolylineFEx</title>
+				<para lang="ru">Отрисовка ломаной кривой с возможностью установки стиля пера</para>
+				<programlisting>bool VS_PolylineFEx(
+			int nID, 
+			S_VS_PointF *pPoints, 
+			int nPoints, 
+			unsigned int unColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>pPoints</emphasis>  массив точек.</callout>
+					<callout lang="ru"><emphasis>nPoints</emphasis> количество точек.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет ломаной кривой.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки линий.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_POLYLINE_EX">VS_PolylineEx()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_RECTANGLE">
+				<title lang="ru">VS_Rectangle</title>
+				<para lang="ru">Отрисовка прямоугольника</para>
+				<programlisting>bool VS_Rectangle(
+			int nID, 
+			int nLeftRect, 
+			int nTopRect, 
+			int nRightRect, 
+			int nBottomRect, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nLeftRect</emphasis> X координата левого верхнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>nTopRect</emphasis> Y координата левого верхнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>nRightRect</emphasis> X координата правого нижнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>nBottomRect</emphasis> Y координата правого нижнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура прямоугольника.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнения прямоугольника.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция отрисовывает прямоугольник, заданный координатами 
+					nLeftRect, nTopRect, nRightRect, nBottomRect. Цвет контура и цвет заполнения  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>. Если в параметре unFillColor установлено значение 
+					<link linkend="GR_ID_NULL_COLOR">VS_NULL_COLOR</link>, то будет нарисован только контур прямоугольника, 
+					без заполнения его внутренней части.</para>
+			</section><section id="FUNC_VS_RECTANGLE_EX">
+				<title lang="ru">VS_RectangleEx</title>
+				<para lang="ru">Отрисовка прямоугольника с возможностью установки стиля пера</para>
+				<programlisting>bool VS_RectangleEx(
+			int nID, 
+			int nLeftRect, 
+			int nTopRect, 
+			int nRightRect, 
+			int nBottomRect, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nLeftRect</emphasis> X координата левого верхнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>nTopRect</emphasis> Y координата левого верхнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>nRightRect</emphasis> X координата правого нижнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>nBottomRect</emphasis> Y координата правого нижнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура прямоугольника.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнения прямоугольника.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки контура.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция отрисовывает прямоугольник, заданный координатами 
+					nLeftRect, nTopRect, nRightRect, nBottomRect. Цвет контура и цвет заполнения  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>. Если в параметре unFillColor установлено значение 
+					<link linkend="GR_ID_NULL_COLOR">VS_NULL_COLOR</link>, то будет нарисован только контур прямоугольника, 
+					без заполнения его внутренней части.</para>
+			</section><section id="FUNC_VS_RECTANGLE_F">
+				<title lang="ru">VS_RectangleF</title>
+				<para lang="ru">Отрисовка прямоугольника</para>
+				<programlisting>bool VS_RectangleF(
+			int nID, 
+			float fltLeftRect, 
+			float fltTopRect, 
+			float fltRightRect, 
+			float fltBottomRect, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltLeftRect</emphasis> X координата левого верхнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>fltTopRect</emphasis> Y координата левого верхнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>fltRightRect</emphasis> X координата правого нижнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>fltBottomRect</emphasis> Y координата правого нижнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура прямоугольника.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнения прямоугольника.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_RECTANGLE">VS_Rectangle()</link> для чисел с плавающей точкой.</para>
+			</section>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<section id="FUNC_VS_RECTANGLE_F_EX">
+				<title lang="ru">VS_RectangleFEx</title>
+				<para lang="ru">Отрисовка прямоугольника с возможностью установки стиля пера</para>
+				<programlisting>bool VS_RectangleFEx(
+			int nID, 
+			float fltLeftRect, 
+			float fltTopRect, 
+			float fltRightRect, 
+			float fltBottomRect, 
+			unsigned int unBoundColor, 
+			unsigned int unFillColor,
+			int nDashDot
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltLeftRect</emphasis> X координата левого верхнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>fltTopRect</emphasis> Y координата левого верхнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>fltRightRect</emphasis> X координата правого нижнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>fltBottomRect</emphasis> Y координата правого нижнего угла прямоугольника.</callout>
+					<callout lang="ru"><emphasis>unBoundColor</emphasis> цвет контура прямоугольника.</callout>
+					<callout lang="ru"><emphasis>unFillColor</emphasis> цвет заполнения прямоугольника.</callout>
+					<callout lang="ru"><emphasis>nDashDot</emphasis> стиль пера, используемый при отрисовки контура.
+						Для задания стиля используются <link linkend="GR_ID_PEN_STYLE">идентификаторы стиля пера</link>, или 0 - 
+						если требуется отрисовка сплошной линией.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_RECTANGLE_EX">VS_RectangleEx()</link> для чисел с плавающей точкой.</para>
+			</section><section id="FUNC_VS_SET_PIXEL">
+				<title lang="ru">VS_SetPixel</title>
+				<para lang="ru">Установка цвета пикселя</para>
+				<programlisting>bool VS_SetPixel(
+			int nID, 
+			int nX, 
+			int nY, 
+			unsigned int unColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nX</emphasis> X координата писеля на изображении.</callout>
+					<callout lang="ru"><emphasis>nY</emphasis> Y координата пикселя на изображении.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> устанавливаемый цвет пислеля. </callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция устанавливает цвет для элемента изображения с координатами [nX, nY]. Цвет пиклеля задаётся в 32-х битовом слове. 
+					Цвет в этом слове определяется следующим образом: в первом (младшем) байте содержится интенсивность 
+					красного цвета, во втором байте содержится интенсивность зелёного цвета, в третьем байте содержится 
+					интенсивность голубого цвета, четвёртый байт не используется. Для формирования этого слова можно 
+					воспользоваться макросом RGB(), определённым в wingdi.h.</para>
+			</section>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<section id="FUNC_VS_SET_PIXEL_F">
+				<title lang="ru">VS_SetPixelF</title>
+				<para lang="ru">Установка цвета пикселя</para>
+				<programlisting>bool VS_SetPixelF(
+			int nID, 
+			float fltX, 
+			float fltY, 
+			unsigned int unColor
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>fltX</emphasis> X координата писеля на изображении.</callout>
+					<callout lang="ru"><emphasis>fltY</emphasis> Y координата пикселя на изображении.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> устанавливаемый цвет пислеля.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Версия функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link> для чисел с плавающей точкой.</para>
+			</section>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<section id="FUNC_VS_TEXTOUT">
+				<title lang="ru">VS_TextOut</title>
+				<para lang="ru">Функция вывода текста на изображение</para>
+				<programlisting>bool VS_TextOut(
+			int nID, 
+			int nX, 
+			int nY, 
+			int nFontSize, 
+			unsigned int unColor, 
+			const char *szText, 
+			...
+			);</programlisting>			
+				<para lang="ru"><emphasis>Параметры:</emphasis> </para>
+				<calloutlist>
+					<callout lang="ru"><emphasis>nID</emphasis> идентификатор окна.</callout>
+					<callout lang="ru"><emphasis>nX</emphasis> Х координата на изображении для выводе текста.</callout>
+					<callout lang="ru"><emphasis>nY</emphasis> Y координата на изображении для выводе текста.</callout>
+					<callout lang="ru"><emphasis>nSize</emphasis> высота текста в пикселях.</callout>
+					<callout lang="ru"><emphasis>unColor</emphasis> цвет выводимого текста.</callout>
+					<callout lang="ru"><emphasis>szText</emphasis> строка со спецификаторами форматирования.</callout>
+					<callout lang="ru"><emphasis>...</emphasis> аргументы.</callout>
+				</calloutlist>
+				<para lang="ru"><emphasis>Возвращаемое значение:</emphasis> в случае успеха функция возвращает true, в случае неудачи - false.</para>						
+				<para lang="ru"><emphasis>Описание:</emphasis> Функция формирует строку с учётом спецификаторов форматирования и 
+					аргументов и накладывает её на изображение, начиная с точки [nX, nY]. Информацию о спецификаторах форматирования можно 
+					найти в описании функции printf() стандарнтой библиотеки ввода-вывода C. Функция VS_TextOut формирует строку 
+					так же, как функция printf(). Цвет текста  задаётся так, как описано 
+					в функции <link linkend="FUNC_VS_SET_PIXEL">VS_SetPixel()</link>.</para>
+			</section>
+		</section>
+	</section>
+	<section>
+		<title lang="ru">Структуры VShell</title>
+		<section id="STRUCT_MOUSE_STATUS">
+			<title lang="ru">S_VS_MouseStatus</title>		
+			<para lang="ru">Задаёт состояние мыши</para>
+			<programlisting>typedef struct _S_VS_MouseStatus{
+		int nID;
+		int nX;
+		int nY;
+		int nScaleX;
+		int nScaleY;
+		int nKey;
+		int nCursor;
+		} S_VS_MouseStatus;</programlisting>			
+			<para lang="ru"><emphasis>Члены структуры:</emphasis> </para>					
+			<calloutlist>
+				<callout lang="ru"><emphasis>nID</emphasis> Идентификатор активного окна. Имеется в виду идентификатор, заданный пользователем при создании окна.</callout>
+				<callout lang="ru"><emphasis>nX</emphasis> X координата мыши.</callout>
+				<callout lang="ru"><emphasis>nY</emphasis> Y координата мыши.</callout>
+				<callout lang="ru"><emphasis>nScaleX</emphasis> X координата мыши с учетом изменения масштаба, то есть X координата пикселя в изображении.</callout>
+				<callout lang="ru"><emphasis>nScaleY</emphasis> Y координата мыши Y с учетом изменения масштаба, то есть Y координата пикселя в изображении.</callout>
+				<callout lang="ru"><emphasis>nKey</emphasis> Состояние кнопок мыши (см. <link linkend="GR_ID_MOUSE">идентификаторы состояния мыши</link>).</callout>
+				<callout lang="ru"><emphasis>nCursor</emphasis> Тип текущего курсора (см. <link linkend="GR_ID_CURSOR">идентификаторы курсоров мыши</link>).</callout>
+			</calloutlist>								
+		</section><section id="STRUCT_PAL">
+			<title lang="ru">S_VS_Pal</title>
+			<para lang="ru">Задаёт цвет в палитре изображения</para>
+			<programlisting>typedef struct _S_VS_Pal{
+		unsigned char ucBlue;
+		unsigned char ucGreen;
+		unsigned char ucRed;
+		unsigned char ucReserved;
+		} S_VS_Pal;</programlisting>			
+			<para lang="ru"><emphasis>Члены структуры:</emphasis> </para>
+			<calloutlist>
+				<callout lang="ru"><emphasis>ucBlue</emphasis> интенсивность голубогоцвета</callout>
+				<callout lang="ru"><emphasis>ucGreen</emphasis> интенсивность зелёного цвета</callout>
+				<callout lang="ru"><emphasis>ucRed</emphasis> интенсивность красного цвета</callout>
+				<callout lang="ru"><emphasis>ucReserved</emphasis> не используется</callout>
+			</calloutlist>								
+		</section>
+		<section id="STRUCT_POINT">
+			<title lang="ru">S_VS_Point</title>		
+			<para lang="ru">Задаёт позицию точки на изображении в целых числах</para>
+			<programlisting>typedef struct _S_VS_Point{
+		int nX;
+		int nY;
+		} S_VS_Point;</programlisting>			
+			<para lang="ru"><emphasis>Члены структуры:</emphasis> </para>					
+			<calloutlist>
+				<callout lang="ru"><emphasis>nX</emphasis> X координата точки</callout>
+				<callout lang="ru"><emphasis>nY</emphasis> Y координата точки</callout>
+			</calloutlist>								
+		</section>
+		<section id="STRUCT_POINT_F">
+			<title lang="ru">S_VS_PointF</title>		
+			<para lang="ru">Задаёт позицию точки на изображении в числах с плавающей точках</para>
+			<programlisting>typedef struct _S_VS_PointF{
+		float fltX;
+		float fltY;
+		} S_VS_PointF;</programlisting>			
+			<para lang="ru"><emphasis>Члены структуры:</emphasis></para>					
+			<calloutlist>
+				<callout lang="ru"><emphasis>fltX</emphasis> X координата точки</callout>
+				<callout lang="ru"><emphasis>fltY</emphasis> Y координата точки</callout>
+			</calloutlist>								
+		</section>
+		
+	</section>
+	<section>
+		<title lang="ru">Идентификаторы VShell</title>
+		<section id="GR_ID_DRAW_ALL">
+			<title lang="ru">Идентификатор групповой отрисовки</title>		
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="3.10*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="4.35*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_DRAW_ALL</entry><entry colname="col2">0x80000000</entry><entry colname="col3">Константа для передачи в функцию <link linkend="FUNC_VS_DRAW">VS_Draw</link>, для перерисовки всех окон.</entry></row></tbody></tgroup></informaltable>
+		</section><section id="GR_ID_SOURCE">
+			<title lang="ru">Идентификатор окна - источника изображений</title>		
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="2.97*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="4.25*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_SOURCE</entry><entry colname="col2">0x80000000</entry><entry colname="col3">Определяет работу с источником изображений.</entry></row></tbody></tgroup></informaltable>
+		</section><section id="GR_ID_NULL_COLOR">
+			<title lang="ru">Идентификатор отсутствия цвета</title>
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="2.94*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="4.33*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_NULL_COLOR</entry><entry colname="col2">0x80000000</entry><entry colname="col3">Идентификатор для отрисовки замкнутых фигур. Определяет, что при отрисовке замкнутых фигур их внутренние области будут прозрачными, то есть будет нарисован только контур. Используется в функциях векторной графики.</entry></row></tbody></tgroup></informaltable>
+		</section><section id="GR_ID_CURSOR">
+			<title lang="ru">Идентификаторы курсоров мыши</title>
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="3.03*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="4.58*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_CURSOR_ARROW</entry><entry colname="col2">1</entry><entry colname="col3">Курсор "стрелка".</entry></row><row><entry colname="col1">VS_CURSOR_MAGNIFY</entry><entry colname="col2">2</entry><entry colname="col3">Курсор "лупа".</entry></row><row><entry colname="col1">VS_CURSOR_DRAG</entry><entry colname="col2">3</entry><entry colname="col3">Курсор "рука".</entry></row></tbody></tgroup></informaltable>
+		</section><section id="GR_ID_VECTOR">
+			<title lang="ru">Идентификаторы отображения векторов движения</title>
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="3.03*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="4.52*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_NULL_VEC</entry><entry colname="col2">0x80000000</entry><entry colname="col3">Идентификатор несуществующего вектора движения. Используется как признак того, что данный блок не имеет вектора движения. Следует отличать такие векторы от нулевых векторов. Нулевые векторы всё же помечаются точкой цветом, который получается инверсией цвета векторов, а отсутствующие векторы никак не помечаются.</entry></row><row><entry colname="col1">VS_DEF_VEC_COLOR</entry><entry colname="col2">0x80000000</entry><entry colname="col3">Константа для передачи в функцию  <link linkend="FUNC_VS_SET_VECTORS">VS_setVectors</link> или <link linkend="FUNC_VS_SET_VECTORS_F">VS_SetVectorsF</link> , которая показывает, что векторы будут отображаться цветом по умолчанию (цвет по умолчанию можно задать из приложения).</entry></row></tbody></tgroup></informaltable>
+		</section><section id="GR_ID_COLORS">
+			<title lang="ru">Идентификаторы цветов</title>
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="3.13*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="4.80*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead>#define VS_RED			0xFF0000
+#define VS_ORANGERED	0xFF4500
+#define VS_ORANGE		0xFFA500
+#define VS_GOLD			0xFFD700
+#define VS_YELLOW		0xFFFF00
+#define VS_YELLOWGREEN	0x9ACD32
+#define VS_GREENYELLOW	0xADFF2F
+#define VS_GREEN		0x008000
+#define VS_LIME			0x00FF00
+#define VS_LIMEGREEN	0x32CD32
+#define VS_CYAN			0x00FFFF
+#define VS_DARKBLUE		0x00008B
+#define VS_BLUE			0x0000FF
+#define VS_BLUEVIOLET	0x8A2BE2
+#define VS_PURPLE		0x800080
+#define VS_MAGENTA		0xFF00FF
+#define VS_BLACK		0x000000
+#define VS_WHITE		0xFFFFFF
+#define VS_GRAY			0x808080<tbody>
+			<row><entry colname="col1">VS_RED
+</entry><entry colname="col2">	0xFF0000</entry><entry colname="col3">Красный</entry></row>
+			<row><entry colname="col1">VS_ORANGERED</entry><entry colname="col2">0xFF4500</entry><entry colname="col3">Красно-оранжевый</entry></row>
+			<row><entry colname="col1">VS_ORANGE</entry><entry colname="col2">0xFFA500</entry><entry colname="col3">Оранжевый</entry></row>
+			<row><entry colname="col1">VS_GOLD</entry><entry colname="col2">0xFFD700</entry><entry colname="col3">Золотой</entry></row>
+			<row><entry colname="col1">VS_YELLOW</entry><entry colname="col2">0xFFFF00</entry><entry colname="col3">Жёлтый</entry></row>
+			<row><entry colname="col1">VS_YELLOWGREEN</entry><entry colname="col2">0x9ACD32</entry><entry colname="col3">Жёлто-зелёный</entry></row>
+			<row><entry colname="col1">VS_GREENYELLOW</entry><entry colname="col2">0xADFF2F</entry><entry colname="col3">Зелёно-жёлтый</entry></row>
+			<row><entry colname="col1">VS_GREEN</entry><entry colname="col2">0x008000</entry><entry colname="col3">Зелёный</entry></row>
+			<row><entry colname="col1">VS_LIME</entry><entry colname="col2">0x00FF00</entry><entry colname="col3">Яркий зелёный</entry></row>
+			<row><entry colname="col1">VS_LIMEGREEN</entry><entry colname="col2">0x32CD32</entry><entry colname="col3">Серо-зелёный</entry></row>
+			<row><entry colname="col1">VS_CYAN	</entry><entry colname="col2">0x00FFFF</entry><entry colname="col3">Голубой</entry></row>
+			<row><entry colname="col1">VS_DARKBLUE</entry><entry colname="col2">0x00008B</entry><entry colname="col3">Тёмно-синий</entry></row>
+			<row><entry colname="col1">VS_BLUE</entry><entry colname="col2">0x0000FF</entry><entry colname="col3">Синий</entry></row>
+			<row><entry colname="col1">VS_BLUEVIOLET</entry><entry colname="col2">0x8A2BE2</entry><entry colname="col3">Сине-фиолетовый</entry></row>
+			<row><entry colname="col1">VS_PURPLE</entry><entry colname="col2">0x800080</entry><entry colname="col3">Пурпурный</entry></row>
+			<row><entry colname="col1">VS_MAGENTA</entry><entry colname="col2">0xFF00FF</entry><entry colname="col3">Магента</entry></row>
+			<row><entry colname="col1">VS_BLACK</entry><entry colname="col2">0x000000</entry><entry colname="col3">Чёрный</entry></row>
+			<row><entry colname="col1">VS_WHITE</entry><entry colname="col2">0xFFFFFF</entry><entry colname="col3">Белый</entry></row>
+			<row><entry colname="col1">VS_GRAY</entry><entry colname="col2">0x808080</entry><entry colname="col3">Серый</entry></row>
+			</tbody></tgroup></informaltable>
+		</section><section id="GR_ID_MOUSE">
+			<title lang="ru">Идентификаторы состояния мыши</title>
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="3.13*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="4.80*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_MOUSE_LBUTTON</entry><entry colname="col2">1</entry><entry colname="col3">Нажата левая кнопка мыши.</entry></row><row><entry colname="col1">VS_MOUSE_RBUTTON</entry><entry colname="col2">2</entry><entry colname="col3">Нажата правая кнопка мыши.</entry></row><row><entry colname="col1">VS_MOUSE_SHIFT</entry><entry colname="col2">4</entry><entry colname="col3">Нажата клавиша &lt;Shift&gt;.</entry></row><row><entry colname="col1">VS_MOUSE_CONTROL</entry><entry colname="col2">8</entry><entry colname="col3">Нажата клавиша &lt;Ctrl&gt;.</entry></row><row><entry colname="col1">VS_MOUSE_MBUTTON</entry><entry colname="col2">16</entry><entry colname="col3">Нажата средняя кнопка мыши.</entry></row></tbody></tgroup></informaltable>
+		</section><section id="GR_ID_STATUS">
+			<title lang="ru">Идентификаторы состояния программы</title>
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="3.23*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="5.10*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_CLOSE</entry><entry colname="col2">0</entry><entry colname="col3">Программа закрыта пользователем (нажата кнопка закрытия окна в правом верхнем углу окна). </entry></row><row><entry colname="col1">VS_FORWARD</entry><entry colname="col2">1</entry><entry colname="col3">Нажата кнопка "Запуск вперёд" или "Шаг вперёд". Изображения в последовательности загружаются последовательно в прямом порядке.</entry></row><row><entry colname="col1">VS_BACK</entry><entry colname="col2">2</entry><entry colname="col3">Нажата кнопка "Запуск назад" или "Шаг назад". Изображения в последовательности загружаются последовательно в обратном порядке.</entry></row><row><entry colname="col1">VS_STEP</entry><entry colname="col2">4</entry><entry colname="col3">Нажата кнопка "Шаг вперёд" или "Шаг назад". Выполняется пошаговая загрузка изображений.</entry></row><row><entry colname="col1">VS_PAUSE</entry><entry colname="col2">8</entry><entry colname="col3">Нажата кнопка "Пауза". В каждой итерации загружается одно и то же изображение.</entry></row></tbody></tgroup></informaltable>
+		</section><section id="GR_ID_PEN_STYLE">
+			<title lang="ru">Идентификаторы стиля пера для векторной графики</title>
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="3.03*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="4.52*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_DASH</entry><entry colname="col2">1</entry><entry colname="col3">Все линии векторной графики, в том числе контуры фигур будут отрисовываться длинными пунктирными линиями.</entry></row><row><entry colname="col1">VS_DOT</entry><entry colname="col2">2</entry><entry colname="col3">Все линии векторной графики, в том числе контуры фигур будут отрисовываться короткими пунктирными линиями.</entry></row></tbody></tgroup></informaltable>
+		</section><section id="GR_ID_TYPES">
+			<title lang="ru">Идентификаторы типов изображений</title>		
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="3.28*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="5.27*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_RGB1</entry><entry colname="col2">1</entry><entry colname="col3">Изображение 1 бит на пиксель. Цвет определяется палитрой элементов <link linkend="STRUCT_PAL">S_VS_Pal</link> (2 элементa). Каждый элемент изображения является индексом в палитре. По умолчанию для данных изображений используется палитра из чёрного и белого цветов.</entry></row><row><entry colname="col1">VS_RGB4</entry><entry colname="col2">2</entry><entry colname="col3">Изображение 4 бита на пиксель. Цвет определяется палитрой элементов <link linkend="STRUCT_PAL">S_VS_Pal</link> (16 элементов). Каждый элемент изображения является индексом в палитре. По умолчанию для данных изображений используется полутоновая палитра (16 градаций серого цвета).</entry></row><row><entry colname="col1">VS_RGB8</entry><entry colname="col2">3</entry><entry colname="col3">Изображение 8 бит на пиксель. Цвет определяется палитрой элементов <link linkend="STRUCT_PAL">S_VS_Pal</link> (256 элементов). Каждый элемент изображения является индексом в палитре. По умолчанию для данных изображений используется полутоновая палитра (256 градаций серого цвета).</entry></row><row><entry colname="col1">VS_RGB16</entry><entry colname="col2">4</entry><entry colname="col3">Палитра не используется. Цвет пикселя задаётся в 16-ти битах: BGR 5-5-5 (старший бит не используется).</entry></row><row><entry colname="col1">VS_RGB24</entry><entry colname="col2">5</entry><entry colname="col3">Палитра не используется. Цвет пикселя задаётся в 24-х битах: BGR 8-8-8.</entry></row><row><entry colname="col1">VS_RGB32</entry><entry colname="col2">6</entry><entry colname="col3">Палитра не используется. Цвет пикселя задаётся в 32-х битах: BGR 8-8-8 (четвёртый байт не используется).</entry></row><row><entry colname="col1">VS_RGB8_8</entry><entry colname="col2">7</entry><entry colname="col3">Изображение 8 битов на пиксель. Каждый элемент изображения хранится в 8-ми разрядном знаковом слове. Цвет определяется палитрой элементов <link linkend="STRUCT_PAL">S_VS_Pal</link> (256 элементов). Каждый элемент изображения является индексом в палитре. По умолчанию для данных изображений используется полутоновая палитра (256 градаций серого цвета).</entry></row><row><entry colname="col1">VS_RGB8_16</entry><entry colname="col2">8</entry><entry colname="col3">Изображение 8 битов на пиксель. Каждый элемент изображения хранится в 16-ти разрядном знаковом слове. Цвет определяется палитрой элементов <link linkend="STRUCT_PAL">S_VS_Pal</link> (256 элементов). Каждый элемент изображения является индексом в палитре. По умолчанию для данных изображений используется полутоновая палитра (256 градаций серого цвета). При отображении значения элементов усекаются до диапазона от -128 до 127.</entry></row><row><entry colname="col1">VS_RGB8_32</entry><entry colname="col2">9</entry><entry colname="col3">Изображение 8 битов на пиксель. Каждый элемент изображения хранится в 32-х разрядном знаковом слове. Цвет определяется палитрой элементов <link linkend="STRUCT_PAL">S_VS_Pal</link> (256 элементов). Каждый элемент изображения является индексом в палитре. По умолчанию для данных изображений используется полутоновая палитра (256 градаций серого цвета). При отображении значения элементов усекаются до диапазона от -128 до 127.</entry></row></tbody></tgroup></informaltable>
+		</section>
+		
+		
+		
+		
+		
+		
+		
+		
+		<section id="GR_ID_MINMAX">
+			<title lang="ru">Максимальные значения</title>
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="3.07*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="4.26*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_MAX_SLIDER</entry><entry colname="col2">32</entry><entry colname="col3">Максимальное количество доступных пользователю слайдеров.</entry></row><row><entry colname="col1">VS_MAX_RADIO_GROUP</entry><entry colname="col2">16</entry><entry colname="col3">Максимальное количество доступных пользователю групп радио кнопок.</entry></row><row><entry colname="col1">VS_MAX_RADIO</entry><entry colname="col2">16</entry><entry colname="col3">Максимальное количество радио кнопок в группе.</entry></row><row><entry colname="col1">VS_MAX_CHECK_BOX</entry><entry colname="col2">32</entry><entry colname="col3">Максимальное количество доступных пользователю переключателей.</entry></row><row><entry colname="col1">VS_MAX_EDIT</entry><entry colname="col2">32</entry><entry colname="col3">Максимальное количество доступных пользователю окон ввода (окна редактирования).</entry></row></tbody></tgroup></informaltable>
+		</section>
+	<section id="GR_ID_STOP_COLOR">
+			<title lang="ru">Тип для задания цвета для custom палитры</title>		
+			<informaltable><tgroup cols="3"><colspec colnum="1" colname="col1" colwidth="3.10*"/><colspec colnum="2" colname="col2" colwidth="1.00*"/><colspec colnum="3" colname="col3" colwidth="4.35*"/><thead><row><entry colname="col1">Идентификатор</entry><entry colname="col2">Значение</entry><entry colname="col3">Описание</entry></row></thead><tbody><row><entry colname="col1">VS_STOP_COLOR</entry><entry colname="col2">unsigned int</entry><entry colname="col3">32р. слово сотоящее из четрых байтов:
+[0:7]	blue,
+[8:15]	green, 		[16:23]	red, 		[24:31]	index. Передаётся массивом в функцию <link linkend="FUNC_VS_CREATE_CUSTOM_PALETTE">VS_CreateCustomPalette</link> создания custom палитры. Для формирования цвета можно использовать макрос VS_MAKE_STOP_COLOR(index,color).</entry></row></tbody></tgroup></informaltable>
+		</section></section>
+</chapter>
+
+<chapter>
+	<title lang="ru">Ограничения в демонстрационной версии</title>
+	<para lang="ru">В демонстрационной версии отсутствуют следующие возможности:</para>
+	<calloutlist>
+		<callout lang="ru">Сохранение изображений и последовательностей изображений.</callout>
+		<callout lang="ru">Работа с цветными палитрами, в 1, 4 и 8 битовых изображениях. Доступна только полутоновая палитра.</callout>
+	</calloutlist><para lang="ru">Также в демо-версии при выводе изображений в правом верхнем углу дочернего окна выводится надпись "Demo".</para>		
+	
+</chapter>
+
+</book>

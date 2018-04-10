@@ -1,0 +1,433 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "windows.h"
+
+#define IDC_STATIC -1
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+MAIN_MENU MENU 
+BEGIN
+    POPUP "&Файл"
+    BEGIN
+        MENUITEM "Сохранить изображение...\tAlt+F1", MMF_SAVE_IMAGE
+        MENUITEM "Сохранить последовательность...\tAlt+F2", MMF_SAVE_SEQUENCE
+        MENUITEM SEPARATOR
+        MENUITEM "Сохранить контекст VShell\tAlt+F3", MMF_SAVE_SETTING
+        MENUITEM "Сохранить контекст эл. управления...", MMF_SAVE_CONTROL_SETTING
+        MENUITEM "Загрузить контекст эл. управления...", MMF_LOAD_CONTROL_SETTING
+        MENUITEM SEPARATOR
+        MENUITEM "Выход\tAlt+F4",               MMF_EXIT
+    END
+    POPUP "&Операции"
+    BEGIN
+        MENUITEM "Сброс\tCtrl+Home",            MMO_RESET
+        MENUITEM "Запуск вперёд\tCtrl+Up",      MMO_RUN
+        MENUITEM "Пауза\tPause",                MMO_PAUSE
+        MENUITEM "Шаг вперёд\tCtrl+Right",      MMO_STEP
+        MENUITEM "Запуск назад\tCtrl+Down",     MMO_RUN_BACK
+        MENUITEM "Шаг назад\tCtrl+Left",        MMO_STEP_BACK
+        MENUITEM SEPARATOR
+        MENUITEM "Навигация\tF2",               MMO_DRAG
+        MENUITEM "Масштабирование\tF3",         MMO_SCALE
+        MENUITEM "Векторы",                     MMO_VECTORS
+        MENUITEM "Сетка",                       MMO_GRID
+        MENUITEM "Размер окна по изображению\tF4", MMO_ALIGN
+        MENUITEM "Векторная графика\tF5",       MMO_SHOW_USER_GRAPHIC
+        MENUITEM "Растеризовать\tF6",           MMO_RASTER
+        MENUITEM "Переполнения",                MMO_SHOW_OVERFLOWS
+    END
+    POPUP "&Настройки"
+    BEGIN
+        MENUITEM "Векторы...",                  MMS_VECTORS
+        MENUITEM "Сетка...",                    MMS_GRID
+        MENUITEM "Яркость/Контрастность...",    MMS_ADJUST
+        MENUITEM "Сохранить последовательноcть кадров как...", MMS_SAVE_SEQUENCE_AS
+    END
+    POPUP "&Окно"
+    BEGIN
+        MENUITEM "Каскад",                      MMW_CASCADE
+        MENUITEM "Тейл",                        MMW_TILE
+        MENUITEM "Иконки",                      MMW_ARRANGE
+        MENUITEM SEPARATOR
+        MENUITEM "Элементы управления\tF7",     MMW_CONTROLS
+        MENUITEM SEPARATOR
+        MENUITEM "Закрыть",                     MMW_CLOSE
+    END
+    POPUP "&Помощь"
+    BEGIN
+        MENUITEM "О программе..\tF1",           MMH_ABOUT_VSHELL
+    END
+END
+
+POPUP_MENU MENU 
+BEGIN
+    POPUP "Popup"
+    BEGIN
+        MENUITEM "Векторы",                     MMO_VECTORS
+        MENUITEM "Сетка",                       MMO_GRID
+        MENUITEM "Размер окна по изображению",  MMO_ALIGN
+        MENUITEM "Яркость/Контрастность...",    MMS_ADJUST
+        MENUITEM "Переполнения",                MMO_SHOW_OVERFLOWS
+        MENUITEM SEPARATOR
+        MENUITEM "Масштабирование",             MMO_SCALE
+        MENUITEM "Навигация",                   MMO_DRAG
+        MENUITEM SEPARATOR
+        MENUITEM "Сохранить изображение...",    MMF_SAVE_IMAGE
+        MENUITEM "Сохранить последовательность...", MMF_SAVE_SEQUENCE
+        MENUITEM SEPARATOR
+    END
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+MAIN_TOOLBAR TOOLBAR  16, 15
+BEGIN
+    BUTTON      MMO_RESET
+    BUTTON      MMO_RUN
+    BUTTON      MMO_PAUSE
+    BUTTON      MMO_STEP
+    BUTTON      MMO_RUN_BACK
+    BUTTON      MMO_STEP_BACK
+    BUTTON      MMO_DRAG
+    BUTTON      MMO_SCALE
+    BUTTON      MMO_ALIGN
+    SEPARATOR
+    BUTTON      MMO_VECTORS
+    SEPARATOR
+    BUTTON      MMO_GRID
+    SEPARATOR
+    BUTTON      MMO_SHOW_USER_GRAPHIC
+    SEPARATOR
+    BUTTON      MMO_RASTER
+    SEPARATOR
+    BUTTON      MMW_CONTROLS
+    SEPARATOR
+    BUTTON      MMO_BIND
+    SEPARATOR
+    BUTTON      MMF_SAVE_SETTING
+    SEPARATOR
+    BUTTON      MMF_SAVE_CONTROL_SETTING
+    SEPARATOR
+    BUTTON      MMF_LOAD_CONTROL_SETTING
+    SEPARATOR
+    BUTTON      adsf
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+MAIN_TOOLBAR            BITMAP                  "toolbar1.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+CURSOR_FLAT_HAND        CURSOR                  "FlatHand.cur"
+CURSOR_MOVE_HAND        CURSOR                  "MoveHand.cur"
+CURSOR_SCALE            CURSOR                  "Zoom.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+GRID_SETUP_DIALOG DIALOGEX 0, 0, 135, 77
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Настройка сетки"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "OK",BTN_OK,7,56,30,14,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Отмена",BTN_CANCEL,91,56,37,14,0,WS_EX_STATICEDGE
+    LTEXT           "Шаг X:",IDC_STATIC,7,9,23,8
+    EDITTEXT        ED_STEP_X,35,7,24,12,ES_CENTER | ES_NUMBER | NOT WS_BORDER,WS_EX_STATICEDGE
+    LTEXT           "Шаг Y:",IDC_STATIC,7,28,23,8
+    EDITTEXT        ED_STEP_Y,36,25,24,12,ES_CENTER | ES_NUMBER | NOT WS_BORDER,WS_EX_STATICEDGE
+    PUSHBUTTON      "Цвет...",BTN_COLOR,78,7,50,31,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Применить",BTN_APPLY,40,56,48,14,0,WS_EX_STATICEDGE
+END
+
+ADJUST_SETUP_DIALOG DIALOGEX 0, 0, 231, 260
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Яркость/Контрастность"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Закрыть",BTN_OK,91,239,48,14,0,WS_EX_STATICEDGE
+    CONTROL         "Включить обработку",CH_ENABLE_ADJUST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,85,10
+    CONTROL         "Slider1",SL_CONTRAST,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,121,33,100,12
+    CONTROL         "Slider2",SL_BRIGHTNESS,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,10,33,100,12
+    GROUPBOX        "Контрастность",BOX_CONTRAST,119,23,105,40
+    GROUPBOX        "Яркость",BOX_BRIGHTNESS,7,23,105,40
+    CONTROL         "Slider2",SL_MULTIPLIER,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,66,78,102,12
+    GROUPBOX        "Множитель",BOX_MULTIPLIER,62,67,107,41
+    PUSHBUTTON      "Настройка...",BTN_MULTIPLIER_SETUP,113,94,49,11,0,WS_EX_STATICEDGE
+    CTEXT           "",LAB_CONTRAST,123,49,61,8
+    CTEXT           "",LAB_BRIGHTNESS,11,49,61,8
+    CTEXT           "",LAB_MULTIPLIER,68,94,39,8
+    PUSHBUTTON      "Сброс",BTN_CONTRAST_RESET,192,49,27,11,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Сброс",BTN_BRIGHTNESS_RESET,80,49,27,11,0,WS_EX_STATICEDGE
+    CONTROL         "",FRAME_HISTO,"Static",SS_BLACKRECT,24,119,182,81
+    LTEXT           "",ST_HISTO_VALUE,112,206,49,8
+    LTEXT           "Значение:",IDC_STATIC,70,206,36,8
+END
+
+ADJUST_SETUP_PARAM_DIALOG DIALOGEX 0, 0, 257, 107
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Настройка"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Принять",BTN_OK,147,86,50,14,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Отмена",BTN_CANCEL,200,86,50,14,0,WS_EX_STATICEDGE
+    GROUPBOX        "Множитель",IDC_STATIC,7,7,182,40
+    EDITTEXT        ED_ASP_MUL_MIN,12,28,40,12,ES_CENTER | NOT WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        ED_ASP_MUL_CUR,56,28,40,12,ES_CENTER | NOT WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        ED_ASP_MUL_MAX,100,28,40,12,ES_CENTER | NOT WS_BORDER,WS_EX_STATICEDGE
+    EDITTEXT        ED_ASP_MUL_STEP,144,28,40,12,ES_CENTER | NOT WS_BORDER,WS_EX_STATICEDGE
+    GROUPBOX        "Яркость",IDC_STATIC,195,7,55,40
+    EDITTEXT        ED_ASP_BRIG_CUR,203,28,40,12,ES_CENTER | ES_NUMBER | NOT WS_BORDER,WS_EX_STATICEDGE
+    GROUPBOX        "",IDC_STATIC,7,48,243,30
+    LTEXT           "Мин.",IDC_STATIC,25,18,17,8
+    LTEXT           "Поз.",IDC_STATIC,70,18,16,8
+    LTEXT           "Макс.",IDC_STATIC,111,18,21,8
+    LTEXT           "Шаг",IDC_STATIC,156,18,14,8
+    LTEXT           "Поз.",IDC_STATIC,215,18,16,8
+    CTEXT           "255 -> 255",LAB_OUT_MAX,173,62,70,8
+    CTEXT           "0 -> 127",LAB_OUT_NULL,93,62,70,8
+    CTEXT           "-255 -> 0",LAB_OUT_MIN,14,62,70,8
+    PUSHBUTTON      "Настроить по изображению",BTN_SET_BY_IMAGE,7,86,110,14,0,WS_EX_STATICEDGE
+END
+
+VECTORS_SETUP_DIALOG DIALOGEX 0, 0, 135, 60
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Настройка векторов"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "OK",BTN_OK,7,39,29,14,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Отмена",BTN_CANCEL,91,39,37,14,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Применить",BTN_APPLY,41,39,45,14,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Цвет...",BTN_VECTORS_COLOR,39,7,58,18,0,WS_EX_STATICEDGE
+END
+
+ABOUT_VSHELL_DIALOG DIALOG  0, 0, 186, 90
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "О программе"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Закрыть",IDOK,68,69,50,14
+    CTEXT           "VShell вер. 1.0",IDC_STATIC,7,7,172,10
+    CTEXT           "Copyright (C) 2005 НТЦ Модуль.",IDC_STATIC,7,21,172,10
+    CTEXT           "Автор: Сергей Ландышев",IDC_STATIC,7,38,172,10
+END
+
+SAVE_SEQUENCE_AS_DIALOG DIALOGEX 0, 0, 251, 79
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Сохранять последовательность кадров как"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "Спрашивать при сохранении",RD_ASK_FILENAME,"Button",BS_AUTORADIOBUTTON,7,7,113,10
+    CONTROL         "Определить по умолчанию",RD_SPECIFY_FILENAME,"Button",BS_AUTORADIOBUTTON,7,18,106,10
+    EDITTEXT        ED_FILENAME,7,32,182,12,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER | NOT WS_BORDER,WS_EX_STATICEDGE
+    PUSHBUTTON      "Обзор...",BTN_BROWSE,194,31,50,15,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "OK",BTN_OK,86,58,36,14,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Отмена",BTN_CANCEL,128,58,37,14,0,WS_EX_STATICEDGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    GRID_SETUP_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 128
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 70
+    END
+
+    ADJUST_SETUP_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 224
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 253
+    END
+
+    ADJUST_SETUP_PARAM_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 250
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 100
+    END
+
+    VECTORS_SETUP_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 128
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 53
+    END
+
+    ABOUT_VSHELL_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+
+    SAVE_SEQUENCE_AS_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 244
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 72
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_VSHELL              ICON                    "VShell.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+ACCELERATOR ACCELERATORS 
+BEGIN
+    "-",            MMO_SCALE_MINUS,        ASCII,  ALT, NOINVERT
+    "=",            MMO_SCALE_PLUS,         ASCII,  ALT, NOINVERT
+    VK_DOWN,        MMO_RUN_BACK,           VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          MMH_ABOUT_VSHELL,       VIRTKEY, NOINVERT
+    VK_F1,          MMF_SAVE_IMAGE,         VIRTKEY, ALT, NOINVERT
+    VK_F2,          MMO_DRAG,               VIRTKEY, NOINVERT
+    VK_F2,          MMF_SAVE_SEQUENCE,      VIRTKEY, ALT, NOINVERT
+    VK_F3,          MMO_SCALE,              VIRTKEY, NOINVERT
+    VK_F3,          MMF_SAVE_SETTING,       VIRTKEY, ALT, NOINVERT
+    VK_F4,          MMO_ALIGN,              VIRTKEY, NOINVERT
+    VK_F5,          MMO_SHOW_USER_GRAPHIC,  VIRTKEY, NOINVERT
+    VK_F6,          MMO_RASTER,             VIRTKEY, NOINVERT
+    VK_F7,          MMW_CONTROLS,           VIRTKEY, NOINVERT
+    VK_HOME,        MMO_RESET,              VIRTKEY, CONTROL, NOINVERT
+    VK_LEFT,        MMO_STEP_BACK,          VIRTKEY, CONTROL, NOINVERT
+    VK_PAUSE,       MMO_PAUSE,              VIRTKEY, NOINVERT
+    VK_RIGHT,       MMO_STEP,               VIRTKEY, CONTROL, NOINVERT
+    VK_UP,          MMO_RUN,                VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_TB_RESET            "Сброс (Ctrl+Home)"
+    IDS_TB_RUN              "Запуск вперёд (Ctrl+Up)"
+    IDS_TB_PAUSE            "Пауза (Pause)"
+    IDS_TB_STEP             "Шаг вперёд (Ctrl+Right)"
+    IDS_TB_RUN_BACK         "Запуск назад (Ctrl+Down)"
+    IDS_TB_STEP_BACK        "Шаг назад (Ctrl+Left)"
+    IDS_TB_DRAG             "Навигация (F2)"
+    IDS_TB_MAGNIFY          "Масштабирование (F3)"
+    IDS_TB_ALIGN            "Размер окна по изображению (F4)"
+    IDS_TB_VECTORS          "Показать векторы"
+    IDS_TB_GRID             "Показать сетку"
+    IDS_TB_USER_GRAPHIC     "Показать вект. графику (F5)"
+    IDS_TB_RASTER           "Растеризовать графику (F6)"
+    IDS_TB_CONTROLS         "Элементы управления (F7)"
+    IDS_TB_SAVE_SEQUENCE    "Сохранить последовательность кадров"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_TB_SAVE_VS_SETTINGS "Сохранить контекст (Alt+F3)"
+    IDS_TB_SAVE_CTRL_SETTINGS "Сохранить контекст эл. управления"
+    IDS_TB_LOAD_CTRL_SETTINGS "Загрузить контекст эл. управления"
+END
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
