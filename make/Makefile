@@ -21,9 +21,14 @@ vs2015:	$(PROJECT).sln
 $(PROJECT).sln:	premake5.lua 
 	premake5 $(MAKECMDGOALS) 
 
+	
+install: setenv setpath
+	
 setenv: 
 	setenv -a VSHELL $(realpath ..)
-	setenv -a PATH ;%%VSHELL%\bin;
+	
+setpath:	
+	setenv -a PATH ;%%VSHELL%\bin
 #	setx  VSHELL $(realpath ..)
 	
 
