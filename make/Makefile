@@ -25,10 +25,10 @@ $(PROJECT).sln:	premake5.lua
 install: setenv setpath
 	
 setenv: 
-	setenv -a VSHELL $(realpath ..)
+	setenv -ua VSHELL $(realpath ..)
 	
 setpath:	
-	setenv -a PATH ;%%VSHELL%\bin
+	setenv -ua PATH ;%VSHELL%\bin
 #	setx  VSHELL $(realpath ..)
 	
 
