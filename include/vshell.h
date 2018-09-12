@@ -60,26 +60,27 @@
 #define RGB(r,g,b)  (((r) & 0xFF) | (((g) & 0xFF)<<8) | (((b) & 0xFF)<<16))
 #endif
 
+#define RGB2BGR(wikiColor) ((((wikiColor) & 0xFF)<<16) | (((wikiColor) & 0xFF00)) | (((wikiColor) & 0xFF0000)>>16))
 // http://ru.wikipedia.org/wiki/Википедия:Таблица_цветов
-#define VS_RED			0xFF0000
-#define VS_ORANGERED	0xFF4500
-#define VS_ORANGE		0xFFA500
-#define VS_GOLD			0xFFD700
-#define VS_YELLOW		0xFFFF00
-#define VS_YELLOWGREEN	0x9ACD32
-#define VS_GREENYELLOW	0xADFF2F
-#define VS_GREEN		0x008000
-#define VS_LIME			0x00FF00
-#define VS_LIMEGREEN	0x32CD32
-#define VS_CYAN			0x00FFFF
-#define VS_DARKBLUE		0x00008B
-#define VS_BLUE			0x0000FF
-#define VS_BLUEVIOLET	0x8A2BE2
-#define VS_PURPLE		0x800080
-#define VS_MAGENTA		0xFF00FF
-#define VS_BLACK		0x000000
-#define VS_WHITE		0xFFFFFF
-#define VS_GRAY			0x808080
+#define VS_RED			RGB2BGR(0xFF0000)
+#define VS_ORANGERED	RGB2BGR(0xFF4500)
+#define VS_ORANGE		RGB2BGR(0xFFA500)
+#define VS_GOLD			RGB2BGR(0xFFD700)
+#define VS_YELLOW		RGB2BGR(0xFFFF00)
+#define VS_YELLOWGREEN	RGB2BGR(0x9ACD32)
+#define VS_GREENYELLOW	RGB2BGR(0xADFF2F)
+#define VS_GREEN		RGB2BGR(0x008000)
+#define VS_LIME			RGB2BGR(0x00FF00)
+#define VS_LIMEGREEN	RGB2BGR(0x32CD32)
+#define VS_CYAN			RGB2BGR(0x00FFFF)
+#define VS_DARKBLUE		RGB2BGR(0x00008B)
+#define VS_BLUE			RGB2BGR(0x0000FF)
+#define VS_BLUEVIOLET	RGB2BGR(0x8A2BE2)
+#define VS_PURPLE		RGB2BGR(0x800080)
+#define VS_MAGENTA		RGB2BGR(0xFF00FF)
+#define VS_BLACK		RGB2BGR(0x000000)
+#define VS_WHITE		RGB2BGR(0xFFFFFF)
+#define VS_GRAY			RGB2BGR(0x808080)
 
 
 #define VS_MAKE_STOP_COLOR(stop,color) (((stop)<<24)|(color))
