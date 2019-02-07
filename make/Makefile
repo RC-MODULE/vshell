@@ -3,16 +3,17 @@ PROJECT=vshell
 
 
 
-default:
-	$(MAKE) vs2005
+default: vs2005
 	
 	
-vs2005: $(PROJECT).sln
+vs2005: 
+	premake5 vs2005
 	"$(VS80COMNTOOLS)vsvars32" && vcbuild $(PROJECT).sln 
 
 #"$(VS80COMNTOOLS)vsvars32" && vcbuild $(PROJECT).vcproj "Debug"
 
-vs2015:	$(PROJECT).sln
+vs2015:	
+	premake5 vs2005
 	"$(VS140COMNTOOLS)vsvars32" && msbuild.exe $(PROJECT).sln /t:Build
 	
 #/p:Configuration="Release;Platform=Win32
