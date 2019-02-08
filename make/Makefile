@@ -13,9 +13,10 @@ vs2005:
 #"$(VS80COMNTOOLS)vsvars32" && vcbuild $(PROJECT).vcproj "Debug"
 
 vs2015:	
-	premake5 vs2005
-	"$(VS140COMNTOOLS)vsvars32" && msbuild.exe $(PROJECT).sln /t:Build
+	premake5 vs2015
+	"$(VS140COMNTOOLS)vsvars32" && msbuild $(PROJECT).vcxproj /p:Configuration=Release
 	
+#	"$(VS140COMNTOOLS)vsvars32" && msbuild.exe $(PROJECT).sln /t:Build
 #/p:Configuration="Release;Platform=Win32
 #	"$(VS140COMNTOOLS)vsvars32" && msbuild $(PROJECT).vcxproj /p:Configuration=Release
 	
