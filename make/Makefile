@@ -3,7 +3,7 @@ PROJECT=vshell
 
 
 
-default: vs2005
+default: vs2015
 	
 	
 vs2005: 
@@ -33,7 +33,8 @@ setpath:
 	setenv -ua PATH ;%VSHELL%\bin
 #	setx  VSHELL $(realpath ..)
 	
-
+premake:
+	wget https://github.com/premake/premake-core/releases/download/v5.0.0-alpha12/premake-5.0.0-alpha12-windows.zip -Opremake-5.0.0-alpha12-windows.zip
 	
 CLEAN_DIRS = ../bin ../lib
 

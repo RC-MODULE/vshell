@@ -1,13 +1,15 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AviPlayer", "AviPlayer.vcproj", "{729026C1-DEFA-DA37-2739-8CDD93E2B88C}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AviPlayer", "AviPlayer.vcxproj", "{729026C1-DEFA-DA37-2739-8CDD93E2B88C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Palette", "Palette.vcproj", "{34B412FC-A093-9197-A9AB-1C6E150AF8F8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Palette", "Palette.vcxproj", "{34B412FC-A093-9197-A9AB-1C6E150AF8F8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SmoothFilter", "SmoothFilter.vcproj", "{85A5FC40-7108-8CE5-1A8E-C49B06D05768}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SmoothFilter", "SmoothFilter.vcxproj", "{85A5FC40-7108-8CE5-1A8E-C49B06D05768}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VectorGraph", "VectorGraph.vcproj", "{EA805FDA-5636-D8CF-DF2A-D2A64BDFCED3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VectorGraph", "VectorGraph.vcxproj", "{EA805FDA-5636-D8CF-DF2A-D2A64BDFCED3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

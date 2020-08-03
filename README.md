@@ -20,20 +20,27 @@ VShell адресован, прежде всего, для разработчиков, занимающихся обработкой, иссл
 
 
 
-#Сборка:   
-##Генерация проекта для Visual Studio 2005   
+# Сборка:   
+## Генерация проекта для Visual Studio 2005   
 ```
 \vshell\make>  make vs2005 
 ```
 
 
-##Генерация проекта для Visual Studio 2015   
+## Генерация проекта для Visual Studio 2015   
 ```
 \vshell\make>  make vs2015 
 ```
-##Сборка библиотеки:   
+## Сборка библиотеки:   
 ```
 \vshell\make>  make 
 ```
 
->Для генерации файлов-проектов и сборки Makefile необходим premake5 и GnuWin32 utils . Реккомендуются установить с помощью online-установщика [GnuWin32-lite](https://github.com/RC-MODULE/gnuwin32-lite)
+>Для генерации файлов-проектов и сборки Makefile необходим [premake5](https://premake.github.io/download.html). Рекомендуется установить с помощью online-установщика [GnuWin32-lite](https://github.com/RC-MODULE/gnuwin32-lite)
+
+## Установка переменных окружения :   
+команда 
+```
+\vshell\make>  make install
+```
+создаст переменную окружения VSHELL с путем к папке и добавит путь к vshell.dll в переменную PATH
