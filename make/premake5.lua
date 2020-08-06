@@ -23,28 +23,28 @@ solution "vshell"
 	  
 	 
 	configuration {"Debug","Win32"}
-		targetsuffix ("-x86")
+		--targetsuffix ("-x86")
 		architecture "x86"
 		defines { "DEBUG"}
 		symbols  ="On" 
 		objdir "1"
 	
 	configuration {"Release","Win32"}
-		targetsuffix ("-x86")
+		--targetsuffix ("-x86")
 		architecture "x86"
 		defines { "NDEBUG"}
 		symbols  ="Off" 
 		objdir "2"
 	
 	configuration {"Debug","x64"}
-		targetsuffix ("-x64")
+		--targetsuffix ("-x64")
 		architecture "x86_64"
 		defines { "DEBUG"}
 		symbols  ="On" 
 		objdir "3"
 	
 	configuration {"Release","x64"}
-		targetsuffix ("-x64")
+		--targetsuffix ("-x64")
 		architecture "x86_64"
 		defines { "NDEBUG"}
 		symbols  ="Off" 

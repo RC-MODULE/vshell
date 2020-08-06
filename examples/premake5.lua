@@ -3,6 +3,7 @@ ROOT = ".."
 -- A solution contains projects, and defines the available configurations
 solution "vshell-examples"
 	configurations { "Debug", "Release" }
+	platforms { "Win32","x64"}
 	----------------------------------------------
 	
 	project "AviPlayer"
