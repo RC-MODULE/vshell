@@ -42,7 +42,7 @@ int C_AdjustSetupParamDlg::Show(HINSTANCE hInstance, HWND hwndParent)
 //------------------------------------------------------------------------
 INT_PTR C_AdjustSetupParamDlg::OnInitDialog(HWND hDlg)
 {
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(m_hwndParent, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(m_hwndParent, 0);
 
     if(!pChData || !pChData->pBitmap)
     {
@@ -73,7 +73,7 @@ INT_PTR C_AdjustSetupParamDlg::OnInitDialog(HWND hDlg)
 //------------------------------------------------------------------------
 INT_PTR C_AdjustSetupParamDlg::OnSetByImage(HWND hDlg)
 {
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(m_hwndParent, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(m_hwndParent, 0);
     if(!pChData || !pChData->pBitmap || !pChData->pBitmap->Data())
     {
         return FALSE;
@@ -221,7 +221,7 @@ INT_PTR C_AdjustSetupParamDlg::OnSetByImage(HWND hDlg)
 INT_PTR C_AdjustSetupParamDlg::OnOk(HWND hDlg)
 {
     char szStr[40], *szEnd;
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(m_hwndParent, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(m_hwndParent, 0);
 
     if(!pChData || !pChData->pBitmap)
     {

@@ -72,7 +72,7 @@ int C_AdjustSetupDlg::Show(HINSTANCE hInstance, HWND hwndParent)
 //------------------------------------------------------------------------
 INT_PTR C_AdjustSetupDlg::OnInitDialog(HWND hDlg)
 {
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(m_hwndParent, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(m_hwndParent, 0);
     if(!pChData || !pChData->pBitmap)
     {
         OnCancel(hDlg);
@@ -197,7 +197,7 @@ INT_PTR C_AdjustSetupDlg::OnCancel(HWND hDlg)
 //------------------------------------------------------------------------
 INT_PTR C_AdjustSetupDlg::OnChAdjust(HWND hDlg)
 {
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(m_hwndParent, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(m_hwndParent, 0);
     BOOL fAdjust = IsDlgButtonChecked(hDlg, CH_ENABLE_ADJUST);
 
     if(pChData && pChData->pBitmap)
@@ -248,7 +248,7 @@ INT_PTR C_AdjustSetupDlg::OnNotify(HWND hDlg, LPARAM lp)
         return TRUE;
     }
     
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(m_hwndParent, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(m_hwndParent, 0);
     if(!pChData || !pChData->pBitmap)
     {
         return TRUE;
@@ -288,7 +288,7 @@ INT_PTR C_AdjustSetupDlg::OnSetupParamMult(HWND hDlg)
 {    
     if(AdjustSetupParamDlg.Show(m_hInstance, m_hwndParent))
     {
-        S_ChildData *pChData = (S_ChildData*)GetWindowLong(m_hwndParent, 0);
+        S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(m_hwndParent, 0);
         
         if(!pChData || !pChData->pBitmap)
         {
@@ -327,7 +327,7 @@ INT_PTR C_AdjustSetupDlg::OnSetupParamMult(HWND hDlg)
 //------------------------------------------------------------------------
 INT_PTR C_AdjustSetupDlg::OnReset(HWND hDlg, int nID)
 {
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(m_hwndParent, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(m_hwndParent, 0);
     
     if(!pChData || !pChData->pBitmap)
     {

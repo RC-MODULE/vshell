@@ -510,7 +510,7 @@ LRESULT C_FrameWnd::OnMMFSaveImage()
     HWND hwndCur = (HWND)SendMessage(m_hwndView, WM_MDIGETACTIVE, 0, 0);
     S_ChildData *pChData;
 
-    pChData = (S_ChildData*)GetWindowLong(hwndCur, 0);
+    pChData = (S_ChildData*)GetWindowLongPtr(hwndCur, 0);
     if(pChData == NULL || pChData->pBitmap == NULL)
     {
         return NULL;
@@ -575,7 +575,7 @@ LRESULT C_FrameWnd::OnMMFSaveSequence()
     }
     
 	HWND hwndCur = (HWND)SendMessage(m_hwndView, WM_MDIGETACTIVE, 0, 0);
-	pChData = (S_ChildData*)GetWindowLong(hwndCur, 0);
+	pChData = (S_ChildData*)GetWindowLongPtr(hwndCur, 0);
 	if(pChData == NULL || pChData->pBitmap == NULL)
 	{
 		return NULL;
@@ -687,7 +687,7 @@ LRESULT C_FrameWnd::OnMMFSaveSetting()
     i = 0;
     while(hwndChild = GetDlgItem(FrameWnd.m_hwndView, FIRSTCHILD_ID + i))
     {
-        pChData = (S_ChildData*)GetWindowLong(hwndChild, 0);
+        pChData = (S_ChildData*)GetWindowLongPtr(hwndChild, 0);
         if(pChData && pChData->pBitmap)
         {
             pWindow[i].fMinimized = IsIconic(hwndChild);
@@ -891,7 +891,7 @@ LRESULT C_FrameWnd::OnMMOScaleAccel(BOOL fZoom)
 LRESULT C_FrameWnd::OnMMOVectors()
 {
     HWND hwndCur = (HWND)SendMessage(m_hwndView, WM_MDIGETACTIVE, 0, 0);
-    S_ChildData *pChData = (S_ChildData*)(GetWindowLong(hwndCur, 0));
+    S_ChildData *pChData = (S_ChildData*)(GetWindowLongPtr(hwndCur, 0));
     if(!pChData)
     {
         return NULL;
@@ -911,7 +911,7 @@ LRESULT C_FrameWnd::OnMMOVectors()
 LRESULT C_FrameWnd::OnMMOGrid()
 {
     HWND hwndCur = (HWND)SendMessage(m_hwndView, WM_MDIGETACTIVE, 0, 0);
-    S_ChildData *pChData = (S_ChildData*)(GetWindowLong(hwndCur, 0));
+    S_ChildData *pChData = (S_ChildData*)(GetWindowLongPtr(hwndCur, 0));
     if(!pChData)
     {
         return NULL;
@@ -930,7 +930,7 @@ LRESULT C_FrameWnd::OnMMOGrid()
 LRESULT C_FrameWnd::OnMMOAlign()
 {
     HWND hwndCur = (HWND)SendMessage(m_hwndView, WM_MDIGETACTIVE, 0, 0);
-    S_ChildData *pChData = (S_ChildData*)(GetWindowLong(hwndCur, 0));
+    S_ChildData *pChData = (S_ChildData*)(GetWindowLongPtr(hwndCur, 0));
     if(!pChData)
     {
         return NULL;
@@ -952,7 +952,7 @@ LRESULT C_FrameWnd::OnMMOAlign()
 LRESULT C_FrameWnd::OnMMOShowUserGraphic()
 {
     HWND hwndCur = (HWND)SendMessage(m_hwndView, WM_MDIGETACTIVE, 0, 0);
-    S_ChildData *pChData = (S_ChildData*)(GetWindowLong(hwndCur, 0));
+    S_ChildData *pChData = (S_ChildData*)(GetWindowLongPtr(hwndCur, 0));
     if(!pChData)
     {
         return NULL;
@@ -971,7 +971,7 @@ LRESULT C_FrameWnd::OnMMOShowUserGraphic()
 LRESULT C_FrameWnd::OnMMORaster()
 {
     HWND hwndCur = (HWND)SendMessage(m_hwndView, WM_MDIGETACTIVE, 0, 0);
-    S_ChildData *pChData = (S_ChildData*)(GetWindowLong(hwndCur, 0));
+    S_ChildData *pChData = (S_ChildData*)(GetWindowLongPtr(hwndCur, 0));
     if(!pChData)
     {
         return NULL;
@@ -990,7 +990,7 @@ LRESULT C_FrameWnd::OnMMORaster()
 LRESULT C_FrameWnd::OnMMOShowOverflows()
 {
     HWND hwndActive = (HWND)SendMessage(m_hwndView, WM_MDIGETACTIVE, 0, 0);
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(hwndActive, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(hwndActive, 0);
     if(pChData == NULL)
     {
         return NULL;
@@ -1006,7 +1006,7 @@ LRESULT C_FrameWnd::OnMMOShowOverflows()
 LRESULT C_FrameWnd::OnMMSVectors()
 {
     HWND hwndActive = (HWND)SendMessage(m_hwndView, WM_MDIGETACTIVE, 0, 0);
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(hwndActive, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(hwndActive, 0);
     if(pChData == NULL)
     {
         return NULL;
@@ -1020,7 +1020,7 @@ LRESULT C_FrameWnd::OnMMSVectors()
 LRESULT C_FrameWnd::OnMMSGrid()
 {
     HWND hwndActive = (HWND)SendMessage(m_hwndView, WM_MDIGETACTIVE, 0, 0);
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(hwndActive, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(hwndActive, 0);
     if(pChData == NULL)
     {
         return NULL;
@@ -1075,14 +1075,14 @@ LRESULT C_FrameWnd::OnChildCreate(HWND hWnd, WPARAM, LPARAM)
             sizeof(S_ChildData));
     ZeroMemory(pChData, sizeof(S_ChildData));
     
-    SetWindowLong(hWnd, 0, (long)pChData);
+    SetWindowLongPtr(hWnd, 0, (long)pChData);
 
     return NULL;
 }
 //------------------------------------------------------------------------
 LRESULT C_FrameWnd::OnChildActivate(HWND hWnd)
 {
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(hWnd, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(hWnd, 0);
     BOOL fValid = (pChData && pChData->pBitmap);
 
     SetMenuState(MMO_VECTORS, TRUE, fValid && pChData->pBitmap->m_VG.m_Vectors.fShow);
@@ -1102,7 +1102,7 @@ LRESULT C_FrameWnd::OnChildMouseMove(HWND hWnd, WPARAM wp, LPARAM lp)
     COLORREF cr;
 	DWORD dwPixVal;
 
-    pChData = (S_ChildData*)GetWindowLong(hWnd, 0);
+    pChData = (S_ChildData*)GetWindowLongPtr(hWnd, 0);
     if(!pChData || !pChData->pBitmap)
     {
         return NULL;
@@ -1164,7 +1164,7 @@ LRESULT C_FrameWnd::OnChildPaint(HWND hWnd, WPARAM, LPARAM)
     BeginPaint(hWnd, &ps);
     EndPaint(hWnd, &ps);
 
-    pChData = (S_ChildData*)GetWindowLong(hWnd, 0);
+    pChData = (S_ChildData*)GetWindowLongPtr(hWnd, 0);
     if(pChData == NULL || pChData->pBitmap == NULL)
     {
         return FALSE;
@@ -1205,7 +1205,7 @@ LRESULT C_FrameWnd::OnChildClose(HWND hWnd, WPARAM, LPARAM)
 //------------------------------------------------------------------------
 LRESULT C_FrameWnd::OnChildDestroy(HWND hWnd, WPARAM, LPARAM)
 {
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(hWnd, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(hWnd, 0);
     if(pChData)
     {
         delete pChData->pBitmap;
@@ -1231,7 +1231,7 @@ LRESULT C_FrameWnd::OnChildLButtonDown(HWND hWnd, WPARAM wp, LPARAM lp)
         S_ChildData *pChData;
         POINT ptMouse;
 
-        pChData = (S_ChildData*)GetWindowLong(hWnd, 0);
+        pChData = (S_ChildData*)GetWindowLongPtr(hWnd, 0);
             
         if(!pChData || !pChData->pBitmap)
         {
@@ -1347,7 +1347,7 @@ LRESULT C_FrameWnd::OnChildRButtonDown(HWND hWnd, WPARAM wp, LPARAM lp)
 //------------------------------------------------------------------------
 LRESULT C_FrameWnd::OnChildSize(HWND hWnd, WPARAM, LPARAM) // Не вызывается.
 {
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(hWnd, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(hWnd, 0);
     if(pChData == NULL || pChData->pBitmap == NULL)
     {
         return FALSE;
@@ -1358,7 +1358,7 @@ LRESULT C_FrameWnd::OnChildSize(HWND hWnd, WPARAM, LPARAM) // Не вызывается.
 //------------------------------------------------------------------------
 BOOL C_FrameWnd::Align(HWND hWnd)
 {
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(hWnd, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(hWnd, 0);
     if(pChData == NULL || pChData->pBitmap == NULL)
     {
         return NULL;
@@ -1426,7 +1426,7 @@ BOOL C_FrameWnd::CreateChildWindow(PSTR szName, int nID,
     SendMessage(hwndChild, WM_SETICON, ICON_SMALL, (LPARAM)LoadImage(m_hInstance, 
             MAKEINTRESOURCE(IDI_VSHELL), IMAGE_ICON, 16, 16, 0));
 
-    if((pChData = (S_ChildData*)GetWindowLong(hwndChild, 0)) == NULL)
+    if((pChData = (S_ChildData*)GetWindowLongPtr(hwndChild, 0)) == NULL)
     {
         return FALSE;
     }
@@ -1572,7 +1572,7 @@ BOOL C_FrameWnd::Draw(int nID)
     {
         while(hWnd = GetDlgItem(m_hwndView, FIRSTCHILD_ID + i))
         {
-            pChData = (S_ChildData*)GetWindowLong(hWnd, 0);
+            pChData = (S_ChildData*)GetWindowLongPtr(hWnd, 0);
             if(pChData != NULL && pChData->pBitmap != NULL)
             {
                 pChData->pBitmap->m_VG.Swap();
@@ -1997,7 +1997,7 @@ HWND C_FrameWnd::FindWindowData(int nID, S_ChildData **ppChData)
 
     while(hWnd = GetDlgItem(m_hwndView, FIRSTCHILD_ID + i))
     {
-        *ppChData = (S_ChildData*)GetWindowLong(hWnd, 0);
+        *ppChData = (S_ChildData*)GetWindowLongPtr(hWnd, 0);
 
         if(*ppChData && (nID == (*ppChData)->nID))
         {
@@ -2012,7 +2012,7 @@ HWND C_FrameWnd::FindWindowData(int nID, S_ChildData **ppChData)
 BOOL C_FrameWnd::GetMouseStatus(int *pnID, int *pnX, int *pnY, int *pnScaleX, int *pnScaleY, 
         int *pnKey, int *pnCursor)
 {
-    S_ChildData *pChData = (S_ChildData*)GetWindowLong(m_hwndMouse, 0);
+    S_ChildData *pChData = (S_ChildData*)GetWindowLongPtr(m_hwndMouse, 0);
     if(pChData == NULL)
     {
         return FALSE;
@@ -2486,8 +2486,8 @@ BOOL C_FrameWnd::SetText(char *szText)
             return FALSE;
         }
 
-        SetWindowLong(m_hwndText, GWL_STYLE, 
-                GetWindowLong(m_hwndText, GWL_STYLE) & (~WS_MAXIMIZEBOX));
+        SetWindowLongPtr(m_hwndText, GWL_STYLE, 
+                GetWindowLongPtr(m_hwndText, GWL_STYLE) & (~WS_MAXIMIZEBOX));
         
         SendMessage(m_hwndView, WM_MDISETMENU, (WPARAM)m_hFrameMenu, 
             (LPARAM)GetSubMenu(m_hFrameMenu, WINDOW_MENU_POS));

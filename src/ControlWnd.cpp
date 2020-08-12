@@ -203,8 +203,7 @@ LRESULT C_ControlWnd::OnCreate(HWND hWnd, WPARAM, LPARAM)
         SendMessage(m_pEdit[i].hwndEdit, WM_SETFONT, WPARAM(m_hCtrlFont), TRUE);
         SendMessage(m_pEdit[i].hwndBox, WM_SETFONT, WPARAM(m_hCtrlFont), TRUE);
         SendMessage(m_pEdit[i].hwndLabel, WM_SETFONT, WPARAM(m_hCtrlFont), TRUE);
-        lpfnEditWndProc = (WNDPROC)SetWindowLongPtr(m_pEdit[i].hwndEdit, GWLP_WNDPROC, 
-                (LONG)EditWndProc);
+        /// Crash in x64 ---  lpfnEditWndProc = (WNDPROC)SetWindowLongPtr(m_pEdit[i].hwndEdit, GWLP_WNDPROC,    (LONG)EditWndProc);
         m_pEdit[i].nStartYPos = 0;
     }
     return NULL;
